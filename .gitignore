@@ -1,0 +1,7 @@
+*-local.properties
+target
+*iml
+*.versionsBackup
+classes
+*.jar
+out

@@ -1,0 +1,41 @@
+<idea-plugin>
+    <id>com.github.parttimenerd.jfrplugin.plugin</id>
+    <name>JFR Profiler</name>
+    <version>1.0</version>
+    <vendor email="me@mostlynerdless.de" url="https://mostlynerdless.de">Johannes Bechberger</vendor>
+
+    <description><![CDATA[
+      Simple profiler front-end for JFR. Measures methods (based on monitoring settings in current
+      'Run configuration') and displays results as a call tree in a tool window.
+    ]]></description>
+
+    <change-notes>
+    </change-notes>
+
+    <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="202"/>
+
+    <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+
+        <fileType name="JFR"
+                  extensions="jfr"
+                  language="JFR"
+                  fieldName="INSTANCE"
+                  implementationClass="me.bechberger.jfrplugin.lang.JFRFileType"/>
+        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JFRFileEditorProvider"/>
+
+        <runConfigurationExtension implementation="me.bechberger.jfrplugin.runner.JFRPluginRunConfigurationExtension"/>
+
+        <programRunner implementation="me.bechberger.jfrplugin.runner.JFRProgramRunner"/>
+        <executor implementation="me.bechberger.jfrplugin.runner.JFRExecutor"/>
+        <projectService serviceImplementation="me.bechberger.jfrplugin.runner.JFRPluginSettings"/>
+        <projectConfigurable groupId="tools" id="JFR_PLUGIN_CONFIGURABLE" instance="me.bechberger.jfrplugin.settings.JFRPluginConfigurable"/>
+        <errorHandler implementation="me.bechberger.jfrplugin.runner.JFRErrorHandler"/>
+    </extensions>
+</idea-plugin>

@@ -1,0 +1,26 @@
+name: Check format, code and tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: Setup Java JDK
+        uses: actions/setup-java@v2.1.0
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: ktlint
+        run: ./gradlew ktlintCheck
+      - name: detekt
+        run: ./gradlew detekt
+      - name: test
+        run: ./gradlew test

@@ -1,0 +1,211 @@
+import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+group = "me.bechberger"
+description = "A profiler plugin for Java based on JFR"
+
+inner class ProjectInfo {
+    val longName = "IntelliJ Java Profiler Plugin"
+    val website = "https://github.com/parttimenerd/intellij-profiler-plugin"
+    val scm = "git@github.com:parttimenerd/intellij-profiler-plugin.git"
+}
+
+configurations.all {
+    resolutionStrategy.cacheDynamicVersionsFor(0, "hours")
+    resolutionStrategy.cacheChangingModulesFor(0, "hours")
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+plugins {
+    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
+    id("org.jetbrains.kotlin.jvm") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.10"
+
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+
+    id("io.gitlab.arturbosch.detekt") version "1.21.0"
+    pmd
+
+    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+
+    `maven-publish`
+
+    // Apply the application plugin to add support for building a CLI application in Java.
+    application
+    // Gradle IntelliJ Plugin
+    id("org.jetbrains.intellij") version "1.9.0"
+    // Gradle Changelog Plugin
+    id("org.jetbrains.changelog") version "1.3.1"
+    // Gradle Qodana Plugin
+    id("org.jetbrains.qodana") version "0.1.13"
+    idea
+}
+
+pmd {
+    isConsoleOutput = true
+    toolVersion = "6.21.0"
+    rulesMinimumPriority.set(5)
+    ruleSets = listOf("category/java/errorprone.xml", "category/java/bestpractices.xml")
+}
+
+apply { plugin("com.github.johnrengelman.shadow") }
+
+detekt {
+    buildUponDefaultConfig = true // preconfigure defaults
+    //  config = files("$rootDir/config/detekt/detekt.yml")
+    autoCorrect = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "11"
+}
+tasks.withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
+    jvmTarget = "11"
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+fun properties(key: String) = project.findProperty(key).toString()
+
+// Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
+intellij {
+    pluginName.set(properties("pluginName"))
+    version.set(properties("platformVersion"))
+    type.set(properties("platformType"))
+
+    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
+    plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+}
+
+// Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
+changelog {
+    version.set(properties("pluginVersion"))
+    groups.set(emptyList())
+}
+
+// Configure Gradle Qodana Plugin - read more: https://github.com/JetBrains/gradle-qodana-plugin
+qodana {
+    cachePath.set(projectDir.resolve(".qodana").canonicalPath)
+    reportPath.set(projectDir.resolve("build/reports/inspections").canonicalPath)
+    saveReport.set(true)
+    showReport.set(System.getenv("QODANA_SHOW_REPORT")?.toBoolean() ?: false)
+}
+
+dependencies {
+    // Align versions of all Kotlin components
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+
+    // Use the Kotlin JDK 8 standard library.
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+    // This dependency is used by the application.
+    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+
+    // Use the Kotlin JUnit integration.
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
+    implementation("me.bechberger:jfrtofp-server:0.0.2-SNAPSHOT") {
+        isChanging = true
+    }
+    implementation("me.bechberger:jfrtofp:0.0.1-SNAPSHOT") {
+        isChanging = true
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+application {
+    // Define the main class for the application.
+    mainClass.set("me.bechberger.jfrtofp.MainKt")
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.register<Copy>("copyHooks") {
+    from("bin/pre-commit")
+    into(".git/hooks")
+}
+
+tasks.findByName("build")?.dependsOn(tasks.findByName("copyHooks"))
+
+tasks {
+    // Set the JVM compatibility versions
+    properties("javaVersion").let {
+        withType<JavaCompile> {
+            sourceCompatibility = it
+            targetCompatibility = it
+        }
+        withType<KotlinCompile> {
+            kotlinOptions.jvmTarget = it
+        }
+    }
+
+    wrapper {
+        gradleVersion = properties("gradleVersion")
+    }
+
+    patchPluginXml {
+        version.set(properties("pluginVersion"))
+        sinceBuild.set(properties("pluginSinceBuild"))
+        untilBuild.set(properties("pluginUntilBuild"))
+
+        // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
+        pluginDescription.set(
+            projectDir.resolve("README.md").readText().lines().run {
+                val start = "<!-- Plugin description -->"
+                val end = "<!-- Plugin description end -->"
+
+                if (!containsAll(listOf(start, end))) {
+                    throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
+                }
+                subList(indexOf(start) + 1, indexOf(end))
+            }.joinToString("\n").run { markdownToHTML(this) }
+        )
+
+        // Get the latest available change notes from the changelog file
+        changeNotes.set(
+            provider {
+                changelog.run {
+                    getOrNull(properties("pluginVersion")) ?: getLatest()
+                }.toHTML()
+            }
+        )
+    }
+
+    // Configure UI tests plugin
+    // Read more: https://github.com/JetBrains/intellij-ui-test-robot
+    runIdeForUiTests {
+        systemProperty("robot-server.port", "8082")
+        systemProperty("ide.mac.message.dialogs.as.sheets", "false")
+        systemProperty("jb.privacy.policy.text", "<!--999.999-->")
+        systemProperty("jb.consents.confirmation.enabled", "false")
+    }
+
+    publishPlugin {
+        dependsOn("patchChangelog")
+        token.set(properties("jetbrainsToken"))
+        // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+        // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
+        // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
+        channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
+    }
+}
+
+repositories {
+    maven {
+        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    }
+}
