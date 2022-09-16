@@ -50,7 +50,7 @@ pmd {
     isConsoleOutput = true
     toolVersion = "6.21.0"
     rulesMinimumPriority.set(5)
-    ruleSets = listOf("category/java/errorprone.xml", "category/java/bestpractices.xml")
+    ruleSets = listOf("config/pmd/ruleset.xml")
 }
 
 apply { plugin("com.github.johnrengelman.shadow") }
