@@ -20,7 +20,7 @@ But it's still better than nothing, so give it a try! It is the first and only o
 <!-- Plugin description end -->
 
 ## Goals
-- run JFR with some settings for all main-like functions
+- run JFR with some settings on all run configurations
 - be the bridge between simpler tools (like the profiler integrated into IntelliJ Ultimate) and the more advanced
   tools (like JDK Mission Control)
 
@@ -41,12 +41,12 @@ But it's still better than nothing, so give it a try! It is the first and only o
 
 - Using IDE built-in plugin system:
 
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "jfrplugin"</kbd> >
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Java Profiler Plugin"</kbd> >
   <kbd>Install Plugin</kbd>
 
 - Manually:
 
-  Download the [latest release](https://github.com/parttimenerd/jfrplugin/releases/latest) and install it manually using
+  Download the [latest release](https://github.com/parttimenerd/intellij-profiler-plugin/releases/download/latest/Java.Profiler.Plugin-all.jar) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
 

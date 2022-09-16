@@ -4,8 +4,8 @@
 
 ## [Unreleased]
 
-### [0.0.2] - 2022-09-16
-- Implement basic plugin functionality
+### Added
+- Basic plugin functionality
 
 ### [0.0.1] - 2022-09-15
 - Initial project scaffold
