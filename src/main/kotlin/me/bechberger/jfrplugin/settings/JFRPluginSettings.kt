@@ -30,7 +30,8 @@ class JFRPluginSettings : PersistentStateComponent<JFRPluginSettings> {
     companion object {
         val TOPIC = Topic(JFRPluginSettingsListener::class.java)
 
-        fun getInstance(project: Project): JFRPluginSettings = project.getService(JFRPluginSettings::class.java) ?: JFRPluginSettings()
+        fun getInstance(project: Project): JFRPluginSettings =
+            project.getService(JFRPluginSettings::class.java) ?: JFRPluginSettings()
 
         fun getJFRFile(project: Project): VirtualFile? {
             val file = project.basePath + "/" + getInstance(project).jfrFile
