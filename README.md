@@ -9,8 +9,9 @@
 A profiler plugin for JDK 11+ based on JFR and [Firefox Profiler](https://github.com/firefox-devtools/profiler)
 
 It is essentially a thin wrapper around the [jfrtofp-server](https://github.com/parttimenerd/jfrtofp-server) library
-which is a bundle of the [JFR to FirefoxProfiler converter](https://github.com/parttimenerd/jfrtofp) and a custom
-firefox profiler distribution.
+which is a bundle of the [JFR to FirefoxProfiler converter](https://github.com/parttimenerd/jfrtofp) and a
+[custom firefox profiler distribution](https://github.com/parttimenerd/firefox-profiler/tree/merged)
+which includes many of our own PRs which are not yet upstream (and might be less stable).
 
 This plugin is currently in a very early stage, it might run into out of memory issues and not all expected
 features are implemented yet.

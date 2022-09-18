@@ -116,7 +116,7 @@ dependencies {
     implementation("me.bechberger:jfrtofp-server:0.0.2-SNAPSHOT") {
         isChanging = true
     }
-    implementation("me.bechberger:jfrtofp:0.0.1-SNAPSHOT") {
+    implementation("me.bechberger:jfrtofp:0.0.2-SNAPSHOT") {
         isChanging = true
     }
 }
