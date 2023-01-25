@@ -18,8 +18,8 @@ class JFRFileEditor(private val project: Project, private val virtualFile: Virtu
     )
 
     init {
-        if (!virtualFile.exists() || !virtualFile.path.endsWith(".jfr")) {
-            throw IllegalArgumentException("File must exist and have .jfr extension")
+        if (!virtualFile.exists() || !(virtualFile.path.endsWith(".jfr") || virtualFile.path.endsWith(".json.gz"))) {
+            throw IllegalArgumentException("File must exist and have .jfr or .json.gz extension")
         }
 
         messageBusConnection.subscribe(VirtualFileManager.VFS_CHANGES, fileChangedListener)

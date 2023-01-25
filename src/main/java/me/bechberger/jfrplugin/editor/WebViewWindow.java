@@ -21,8 +21,8 @@ public class WebViewWindow implements Disposable {
     private final JBCefBrowser browser;
     private final String url;
 
-    public WebViewWindow(Project project, Path jfrFile) {
-        this.url = Server.startIfNeededAndGetUrl(jfrFile, null, null);
+    public WebViewWindow(Project project, Path file) {
+        this.url = Server.startIfNeededAndGetUrl(file, null, null);
         browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).setUrl(url).build();
         Disposer.register(project, browser);
         // launching a browser properly is hard...

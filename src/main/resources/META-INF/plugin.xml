@@ -30,6 +30,14 @@
                   implementationClass="me.bechberger.jfrplugin.lang.JFRFileType"/>
         <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JFRFileEditorProvider"/>
 
+        <fileType name="Firefox Profiler"
+                  extensions="json.gz"
+                  patterns="*.json.gz"
+                  language="Firefox Profiler"
+                  fieldName="INSTANCE"
+                  implementationClass="me.bechberger.jfrplugin.lang.JsonGzFileType"/>
+        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JsonGzFileEditorProvider"/>
+
         <runConfigurationExtension implementation="me.bechberger.jfrplugin.runner.JFRPluginRunConfigurationExtension"/>
 
         <programRunner implementation="me.bechberger.jfrplugin.runner.JFRProgramRunner"/>
