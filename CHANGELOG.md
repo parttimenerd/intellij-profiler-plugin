@@ -1,12 +1,14 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# IntelliJ Platform Plugin Template Changelog
+# Java Profiler Plugin
 
 ## [Unreleased]
 
-### Added
-- Basic plugin functionality
+- Implement basic functionality for FOSDEM talk
+- support async-profiler using [ap-loader](https://github.com/jvm-profiling-tools/ap-loader) on supported platforms
+- add custom JFR configuration
+  - emits CPU events more frequently
 
-### [0.0.1] - 2022-09-15
+## [0.0.1] - 2022-09-15
 - Initial project scaffold
 - Initially based on the Panda plugin by Ratislav Papp (https://bitbucket.org/rastislavpapp/panda)

@@ -2,10 +2,10 @@ import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "me.bechberger"
-description = "A profiler plugin for Java based on JFR"
+description = "A profiler plugin for Java based on JFR and Firefox Profiler"
 
 inner class ProjectInfo {
-    val longName = "IntelliJ Java Profiler Plugin"
+    val longName = "Java Profiler Plugin"
     val website = "https://github.com/parttimenerd/intellij-profiler-plugin"
     val scm = "git@github.com:parttimenerd/intellij-profiler-plugin.git"
 }
@@ -23,13 +23,12 @@ repositories {
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.7.10"
-    kotlin("plugin.serialization") version "1.7.10"
+    id("org.jetbrains.kotlin.jvm") version "1.8.0"
+    kotlin("plugin.serialization") version "1.8.0"
 
     id("com.github.johnrengelman.shadow") version "7.1.2"
 
     id("io.gitlab.arturbosch.detekt") version "1.21.0"
-    pmd
 
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
 
@@ -38,19 +37,12 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.9.0"
+    id("org.jetbrains.intellij") version "1.12.0"
     // Gradle Changelog Plugin
-    id("org.jetbrains.changelog") version "1.3.1"
+    id("org.jetbrains.changelog") version "2.0.0"
     // Gradle Qodana Plugin
     id("org.jetbrains.qodana") version "0.1.13"
     idea
-}
-
-pmd {
-    isConsoleOutput = true
-    toolVersion = "6.21.0"
-    rulesMinimumPriority.set(5)
-    ruleSets = listOf("config/pmd/ruleset.xml")
 }
 
 apply { plugin("com.github.johnrengelman.shadow") }

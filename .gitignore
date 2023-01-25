@@ -5,3 +5,7 @@ target
 classes
 *.jar
 out
+build
+.gradle
+.DS_STORE
+.idea

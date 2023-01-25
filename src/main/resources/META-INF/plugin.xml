@@ -34,8 +34,6 @@
 
         <programRunner implementation="me.bechberger.jfrplugin.runner.JFRProgramRunner"/>
         <executor implementation="me.bechberger.jfrplugin.runner.JFRExecutor"/>
-        <projectService serviceImplementation="me.bechberger.jfrplugin.runner.JFRPluginSettings"/>
-        <projectConfigurable groupId="tools" id="JFR_PLUGIN_CONFIGURABLE" instance="me.bechberger.jfrplugin.settings.JFRPluginConfigurable"/>
         <errorHandler implementation="me.bechberger.jfrplugin.runner.JFRErrorHandler"/>
     </extensions>
 </idea-plugin>

@@ -55,3 +55,17 @@ But it's still better than nothing, so give it a try! It is the first and only o
 Plugin based on the [IntelliJ Platform Plugin Template][template].
 
 [template]: https://github.com/JetBrains/intellij-platform-plugin-template
+
+
+TODO
+====
+- [ ] fix unknown threads
+- [ ] support opening .json.gz files
+- [ ] create specific JFR config
+- [ ] add ap-loader suppport
+- [ ] add support for custom JFR configs
+- [ ] add support for custom ap-loader configs
+  - both with extra files in the project folder
+- [ ] fileGetter
+- [ ] navigate
+- [ ] project boundaries

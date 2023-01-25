@@ -1,8 +1,8 @@
 package me.bechberger.jfrplugin.util
 
 import com.intellij.AbstractBundle
-import org.jetbrains.annotations.PropertyKey
 import java.util.ResourceBundle
+import org.jetbrains.annotations.PropertyKey
 
 object JFRPluginBundle {
     private const val BUNDLE_NAME = "messages.JFRPluginBundle"

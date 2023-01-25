@@ -16,7 +16,7 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
-import me.bechberger.jfrplugin.settings.JFRPluginSettings
+import me.bechberger.jfrplugin.Constants
 import org.jetbrains.concurrency.Promise
 
 class JFRProgramRunner : DefaultJavaProgramRunner() {
@@ -45,8 +45,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
             val vmParametersList = javaParameters.vmParametersList
             vmParametersList.add("-XX:+FlightRecorder")
             val project = (runProfile as RunConfigurationBase<*>).project
-            val sets = JFRPluginSettings.getInstance(project)
-            vmParametersList.add("-XX:StartFlightRecording=filename=${sets.jfrFile},${sets.additionalJFRConfig}")
+            vmParametersList.add("-XX:StartFlightRecording=filename=${Constants.getJFRFile(project).canonicalPath}")
         }
     }
 
@@ -73,9 +72,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
                     super.processTerminated(event)
 
                     ApplicationManager.getApplication().invokeLater {
-                        // FileEditorManager.getInstance(project)
-                        //    .openFile(JFRPluginSettings.getJFRFile(project)!!, true)
-                        OpenFileDescriptor(project, JFRPluginSettings.getJFRFile(project)!!).navigate(true)
+                        OpenFileDescriptor(project, Constants.getJFRFile(project)).navigate(true)
                     }
                 }
             })
