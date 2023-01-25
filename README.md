@@ -6,17 +6,27 @@
 
 <!-- Plugin description -->
 
-A profiler plugin for JDK 11+ based on JFR and [Firefox Profiler](https://github.com/firefox-devtools/profiler)
+A profiler plugin for JDK 11+ based on JFR and [Firefox Profiler](https://github.com/firefox-devtools/profiler).
+
+It allows you to profile your Java application with JFR and async-profiler and view the results in IntelliJ IDEA,
+as well as opening JFR files.
 
 It is essentially a thin wrapper around the [jfrtofp-server](https://github.com/parttimenerd/jfrtofp-server) library
 which is a bundle of the [JFR to FirefoxProfiler converter](https://github.com/parttimenerd/jfrtofp) and a
 [custom firefox profiler distribution](https://github.com/parttimenerd/firefox-profiler/tree/merged)
 which includes many of our own PRs which are not yet upstream (and might be less stable).
 
+It uses [ap-loader](https://github.com/jvm-profiling-tools/ap-loader) for async-profiler integration.
+
 This plugin is currently in a very early stage, it might run into out of memory issues and not all expected
 features are implemented yet.
 
-But it's still better than nothing, so give it a try! It is the first and only open source IntelliJ profiler plugin.
+It is the first and only open source IntelliJ profiler plugin, so give it a try!
+
+For simplicity, no configuration of the profiling is possible.
+This might change, when the need arises. The plugin currently stores the gathered
+profile in a `profile.jfr` file in the project root. It uses the profiling configuration of JFR
+and wall clock profiling with jfrsync for async-profiler.
 
 <!-- Plugin description end -->
 
@@ -60,9 +70,9 @@ Plugin based on the [IntelliJ Platform Plugin Template][template].
 TODO
 ====
 - [ ] fix unknown threads
-- [ ] support opening .json.gz files
+- [x] support opening .json.gz files
 - [ ] create specific JFR config
-- [ ] add ap-loader suppport
+- [x] add ap-loader suppport
 - [ ] add support for custom JFR configs
 - [ ] add support for custom ap-loader configs
   - both with extra files in the project folder

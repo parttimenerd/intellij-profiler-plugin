@@ -1,26 +1,27 @@
-package me.bechberger.jfrplugin.runner
+package me.bechberger.jfrplugin.runner.ap
 
 import com.intellij.execution.RunConfigurationExtension
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunnerSettings
+import one.profiler.AsyncProfilerLoader
 import org.jdom.Element
 
 /**
- * The class is used to extend the Run Configuration with the JFR specific settings.
+ * The class is used to extend the Run Configuration with the async-profiler specific settings.
  */
-class JFRPluginRunConfigurationExtension : RunConfigurationExtension() {
+class APPluginRunConfigurationExtension : RunConfigurationExtension() {
 
     override fun readExternal(configuration: RunConfigurationBase<*>, element: Element) = Unit
 
     override fun writeExternal(configuration: RunConfigurationBase<*>, element: Element) = Unit
 
     override fun getEditorTitle(): String {
-        return "JFR"
+        return "AP"
     }
 
     override fun isEnabledFor(configuration: RunConfigurationBase<*>, runnerSettings: RunnerSettings?): Boolean {
-        return true
+        return AsyncProfilerLoader.isSupported()
     }
 
     override fun <T : RunConfigurationBase<*>> updateJavaParameters(
@@ -30,6 +31,6 @@ class JFRPluginRunConfigurationExtension : RunConfigurationExtension() {
     ) = Unit
 
     override fun isApplicableFor(configuration: RunConfigurationBase<*>): Boolean {
-        return true
+        return isEnabledFor(configuration, null)
     }
 }

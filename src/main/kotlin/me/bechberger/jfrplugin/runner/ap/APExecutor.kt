@@ -1,11 +1,13 @@
-package me.bechberger.jfrplugin.runner
+package me.bechberger.jfrplugin.runner.ap
 
 import com.intellij.execution.Executor
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
+import one.profiler.AsyncProfilerLoader
 
-class JFRExecutor : Executor() {
+class APExecutor : Executor() {
 
     override fun getToolWindowId(): String {
         return this.id
@@ -16,7 +18,7 @@ class JFRExecutor : Executor() {
     }
 
     override fun getIcon(): Icon {
-        return IconLoader.getIcon("/images/profile.png", this.javaClass)
+        return IconLoader.getIcon("/images/profile_ap.png", this.javaClass)
     }
 
     override fun getDisabledIcon(): Icon {
@@ -24,11 +26,11 @@ class JFRExecutor : Executor() {
     }
 
     override fun getDescription(): String {
-        return "Profile application with JFR"
+        return "Profile application with async-profiler"
     }
 
     override fun getActionName(): String {
-        return "Profile application"
+        return "Profile application (AP)"
     }
 
     override fun getId(): String {
@@ -36,7 +38,7 @@ class JFRExecutor : Executor() {
     }
 
     override fun getStartActionText(): String {
-        return "Profile"
+        return "Profile with async-profiler"
     }
 
     override fun getContextActionId(): String {
@@ -47,8 +49,12 @@ class JFRExecutor : Executor() {
         return null
     }
 
+    override fun isApplicable(project: Project): Boolean {
+        return AsyncProfilerLoader.isSupported()
+    }
+
     companion object {
 
-        const val EXECUTOR_ID = "Java Profile Executor"
+        const val EXECUTOR_ID = "AP Profile Executor"
     }
 }

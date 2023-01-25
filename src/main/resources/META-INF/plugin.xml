@@ -38,10 +38,14 @@
                   implementationClass="me.bechberger.jfrplugin.lang.JsonGzFileType"/>
         <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JsonGzFileEditorProvider"/>
 
-        <runConfigurationExtension implementation="me.bechberger.jfrplugin.runner.JFRPluginRunConfigurationExtension"/>
+        <runConfigurationExtension implementation="me.bechberger.jfrplugin.runner.jfr.JFRPluginRunConfigurationExtension"/>
+        <programRunner implementation="me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner"/>
+        <executor implementation="me.bechberger.jfrplugin.runner.jfr.JFRExecutor"/>
 
-        <programRunner implementation="me.bechberger.jfrplugin.runner.JFRProgramRunner"/>
-        <executor implementation="me.bechberger.jfrplugin.runner.JFRExecutor"/>
+        <runConfigurationExtension implementation="me.bechberger.jfrplugin.runner.ap.APPluginRunConfigurationExtension"/>
+        <programRunner implementation="me.bechberger.jfrplugin.runner.ap.APProgramRunner"/>
+        <executor implementation="me.bechberger.jfrplugin.runner.ap.APExecutor"/>
+
         <errorHandler implementation="me.bechberger.jfrplugin.runner.JFRErrorHandler"/>
     </extensions>
 </idea-plugin>

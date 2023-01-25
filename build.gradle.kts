@@ -111,6 +111,7 @@ dependencies {
     implementation("me.bechberger:jfrtofp:0.0.2-SNAPSHOT") {
         isChanging = true
     }
+    implementation("me.bechberger:ap-loader-all:2.9-3")
 }
 
 tasks.test {

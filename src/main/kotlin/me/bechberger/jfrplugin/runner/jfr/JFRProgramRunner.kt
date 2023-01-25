@@ -1,4 +1,4 @@
-package me.bechberger.jfrplugin.runner
+package me.bechberger.jfrplugin.runner.jfr
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.JavaParameters
@@ -16,6 +16,7 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectRootManager
 import me.bechberger.jfrplugin.Constants
 import org.jetbrains.concurrency.Promise
 
@@ -23,11 +24,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
         return try {
-            (
-                executorId == JFRExecutor.EXECUTOR_ID &&
-                    profile !is RunConfigurationWithSuppressedDefaultRunAction &&
-                    profile is RunConfigurationBase<*>
-                )
+            (executorId == JFRExecutor.EXECUTOR_ID && profile !is RunConfigurationWithSuppressedDefaultRunAction && profile is RunConfigurationBase<*>)
         } catch (_: Exception) {
             false
         }
@@ -43,9 +40,19 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
         super.patch(javaParameters, settings, runProfile, beforeExecution)
         if (beforeExecution) {
             val vmParametersList = javaParameters.vmParametersList
+            vmParametersList.add("-XX:+UnlockDiagnosticVMOptions")
+            vmParametersList.add("-XX:+DebugNonSafepoints")
             vmParametersList.add("-XX:+FlightRecorder")
             val project = (runProfile as RunConfigurationBase<*>).project
-            vmParametersList.add("-XX:StartFlightRecording=filename=${Constants.getJFRFile(project).canonicalPath}")
+            vmParametersList.add(
+                "-XX:StartFlightRecording=filename=${Constants.getJFRFile(project)}," +
+                    "settings='$JFR_CONFIG_FILE',dumponexit=true"
+            )
+            ProjectRootManager.getInstance(project).projectSdk?.versionString?.let {
+                if (!it.matches(".*(8|9|10|11|12|13|14|15|16)[.][0-9]+[.][0-9]+.*".toRegex())) {
+                    vmParametersList.add("-Xlog:jfr+startup=error")
+                }
+            }
         }
     }
 
@@ -72,7 +79,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
                     super.processTerminated(event)
 
                     ApplicationManager.getApplication().invokeLater {
-                        OpenFileDescriptor(project, Constants.getJFRFile(project)).navigate(true)
+                        OpenFileDescriptor(project, Constants.getJFRVirtualFile(project)).navigate(true)
                     }
                 }
             })
@@ -82,6 +89,8 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
     override fun getRunnerId() = RUNNER_ID
 
     companion object {
-        const val RUNNER_ID = "Java Profile Runner"
+        const val RUNNER_ID = "JFR Profile Runner"
+
+        const val JFR_CONFIG_FILE = "profile"
     }
 }
