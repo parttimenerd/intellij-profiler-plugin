@@ -16,7 +16,7 @@ import java.nio.file.Path
 
 @OptIn(ExperimentalSerializationApi::class)
 val jsonFormat = Json {
-    prettyPrint = false
+    prettyPrint = true
     encodeDefaults = true
     explicitNulls = false
 }
