@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import me.bechberger.jfrplugin.config.profilerConfig
 import java.util.logging.Logger
 import javax.swing.JComponent
 
@@ -25,6 +26,7 @@ class JFRFileEditor(private val project: Project, private val virtualFile: Virtu
         messageBusConnection.subscribe(VirtualFileManager.VFS_CHANGES, fileChangedListener)
         webViewWindow = WebViewWindow(
             project,
+            project.profilerConfig.conversionConfig.toConfig(),
             virtualFile.toNioPath()
         )
         viewComponent = webViewWindow.component

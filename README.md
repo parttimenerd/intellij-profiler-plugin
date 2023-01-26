@@ -70,12 +70,10 @@ Plugin based on the [IntelliJ Platform Plugin Template][template].
 
 TODO
 ====
-- [ ] fix unknown threads
+- [x] fix unknown threads
 - [x] support opening .json.gz files
-- [ ] create specific JFR config
-  - too difficult
-- [x] add ap-loader suppport
-- [ ] fix startup profile files problem
+- [x] add ap-loader support
+- [x] fix startup profile files problem
 - [x] add support for custom JFR configs
 - [x] add support for custom ap-loader configs
   - both with extra files in the project folder
@@ -85,4 +83,5 @@ TODO
   - [ ] support for anonymous classes, lambdas, ...
   - [ ] support for decompiled classes
   - [ ] support for kotlin
-- [ ] project boundaries
+- [x] project boundaries
+  - implemented via conversion config, so user defines it
