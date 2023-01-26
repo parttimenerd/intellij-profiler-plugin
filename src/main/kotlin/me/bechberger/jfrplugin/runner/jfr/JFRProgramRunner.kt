@@ -24,7 +24,10 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
         return try {
-            (executorId == JFRExecutor.EXECUTOR_ID && profile !is RunConfigurationWithSuppressedDefaultRunAction && profile is RunConfigurationBase<*>)
+            (
+                executorId == JFRExecutor.EXECUTOR_ID && profile !is RunConfigurationWithSuppressedDefaultRunAction &&
+                    profile is RunConfigurationBase<*>
+                )
         } catch (_: Exception) {
             false
         }

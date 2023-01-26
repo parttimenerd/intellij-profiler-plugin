@@ -17,7 +17,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import me.bechberger.jfrplugin.Constants
-import me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner
 import one.profiler.AsyncProfilerLoader
 import org.jetbrains.concurrency.Promise
 

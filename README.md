@@ -19,7 +19,8 @@ which includes many of our own PRs which are not yet upstream (and might be less
 It uses [ap-loader](https://github.com/jvm-profiling-tools/ap-loader) for async-profiler integration.
 
 This plugin is currently in a very early stage, it might run into out of memory issues and not all expected
-features are implemented yet.
+features are implemented yet. I tested it only on Mac so far, but it should work on other Unixes too.
+Windows users might still encounter issues.
 
 It is the first and only open source IntelliJ profiler plugin, so give it a try!
 
@@ -72,10 +73,16 @@ TODO
 - [ ] fix unknown threads
 - [x] support opening .json.gz files
 - [ ] create specific JFR config
+  - too difficult
 - [x] add ap-loader suppport
+- [ ] fix startup profile files problem
 - [ ] add support for custom JFR configs
 - [ ] add support for custom ap-loader configs
   - both with extra files in the project folder
-- [ ] fileGetter
-- [ ] navigate
+- [ ] fileGetter and navigate for proper IDE integration
+  - [x] basic support for simple classes
+  - [ ] support for inner classes
+  - [ ] support for anonymous classes, lambdas, ...
+  - [ ] support for decompiled classes
+  - [ ] support for kotlin
 - [ ] project boundaries

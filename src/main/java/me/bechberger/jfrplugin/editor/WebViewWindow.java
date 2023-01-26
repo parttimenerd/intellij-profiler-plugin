@@ -5,8 +5,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.ui.jcef.JBCefBrowserBuilder;
-import me.bechberger.jfrtofp.processor.ConfigMixin;
-import me.bechberger.jfrtofp.server.*;
+import me.bechberger.jfrplugin.util.PsiUtils;
+import me.bechberger.jfrtofp.server.Server;
 
 import javax.swing.*;
 import java.nio.file.Path;
@@ -22,7 +22,9 @@ public class WebViewWindow implements Disposable {
     private final String url;
 
     public WebViewWindow(Project project, Path file) {
-        this.url = Server.startIfNeededAndGetUrl(file, null, null);
+        this.url = Server.startIfNeededAndGetUrl(file, (classLocation) -> PsiUtils.INSTANCE.getFileContent(project,
+                classLocation.klass, classLocation.pkg), (dest) -> PsiUtils.INSTANCE.navigateToClass(project,
+                dest.klass, dest.pkg, dest.line));
         browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).setUrl(url).build();
         Disposer.register(project, browser);
         // launching a browser properly is hard...
