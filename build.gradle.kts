@@ -105,6 +105,8 @@ dependencies {
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     implementation("me.bechberger:jfrtofp-server:0.0.2-SNAPSHOT") {
         isChanging = true
     }

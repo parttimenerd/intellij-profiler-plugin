@@ -76,8 +76,8 @@ TODO
   - too difficult
 - [x] add ap-loader suppport
 - [ ] fix startup profile files problem
-- [ ] add support for custom JFR configs
-- [ ] add support for custom ap-loader configs
+- [x] add support for custom JFR configs
+- [x] add support for custom ap-loader configs
   - both with extra files in the project folder
 - [ ] fileGetter and navigate for proper IDE integration
   - [x] basic support for simple classes

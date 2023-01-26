@@ -17,7 +17,9 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
-import me.bechberger.jfrplugin.Constants
+import me.bechberger.jfrplugin.config.jfrFile
+import me.bechberger.jfrplugin.config.jfrSettingsFile
+import me.bechberger.jfrplugin.config.jfrVirtualFile
 import org.jetbrains.concurrency.Promise
 
 class JFRProgramRunner : DefaultJavaProgramRunner() {
@@ -48,8 +50,8 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
             vmParametersList.add("-XX:+FlightRecorder")
             val project = (runProfile as RunConfigurationBase<*>).project
             vmParametersList.add(
-                "-XX:StartFlightRecording=filename=${Constants.getJFRFile(project)}," +
-                    "settings='$JFR_CONFIG_FILE',dumponexit=true"
+                "-XX:StartFlightRecording=filename=${project.jfrFile}," +
+                    "settings='${project.jfrSettingsFile}',dumponexit=true"
             )
             ProjectRootManager.getInstance(project).projectSdk?.versionString?.let {
                 if (!it.matches(".*(8|9|10|11|12|13|14|15|16)[.][0-9]+[.][0-9]+.*".toRegex())) {
@@ -82,7 +84,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
                     super.processTerminated(event)
 
                     ApplicationManager.getApplication().invokeLater {
-                        OpenFileDescriptor(project, Constants.getJFRVirtualFile(project)).navigate(true)
+                        OpenFileDescriptor(project, project.jfrVirtualFile).navigate(true)
                     }
                 }
             })
@@ -93,7 +95,5 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
 
     companion object {
         const val RUNNER_ID = "JFR Profile Runner"
-
-        const val JFR_CONFIG_FILE = "profile"
     }
 }

@@ -16,7 +16,9 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
-import me.bechberger.jfrplugin.Constants
+import me.bechberger.jfrplugin.config.jfrFile
+import me.bechberger.jfrplugin.config.jfrVirtualFile
+import me.bechberger.jfrplugin.config.profilerConfig
 import one.profiler.AsyncProfilerLoader
 import org.jetbrains.concurrency.Promise
 
@@ -48,10 +50,13 @@ class APProgramRunner : DefaultJavaProgramRunner() {
             vmParametersList.add("-XX:+UnlockDiagnosticVMOptions")
             vmParametersList.add("-XX:+DebugNonSafepoints")
             val asyncProfiler = AsyncProfilerLoader.getAsyncProfilerPath()
+            val conf = project.profilerConfig.asyncProfilerConfig
             vmParametersList.add(
-                "-agentpath:$asyncProfiler=start,event=wall,loglevel=WARN," +
-                    "file=${Constants.getJFRFile(project)}," +
-                    "alloc,jfrsync,jfr"
+                "-agentpath:$asyncProfiler=start,event=${conf.event},loglevel=WARN," +
+                    "file=${project.jfrFile}" +
+                    (if (conf.alloc) ",alloc" else "") +
+                    "${if (conf.jfrsync) ",jfrsync" else ""}," +
+                    "jfr${if (conf.misc.isNotBlank()) ",${conf.misc}" else ""}"
             )
         }
     }
@@ -79,7 +84,7 @@ class APProgramRunner : DefaultJavaProgramRunner() {
                     super.processTerminated(event)
 
                     ApplicationManager.getApplication().invokeLater {
-                        OpenFileDescriptor(project, Constants.getJFRVirtualFile(project)).navigate(true)
+                        OpenFileDescriptor(project, project.jfrVirtualFile).navigate(true)
                     }
                 }
             })
