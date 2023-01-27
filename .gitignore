@@ -14,4 +14,4 @@ Java Profiler Plugin.iws
 test-project/.profileconfig.json
 test-project/flight.json.gz
 test-project/profile.jfr
-
+test-project/.idea/workspace.xml

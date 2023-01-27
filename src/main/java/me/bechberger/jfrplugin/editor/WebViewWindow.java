@@ -11,6 +11,7 @@ import me.bechberger.jfrtofp.server.Server;
 
 import javax.swing.*;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 /**
  * Window that loads an HTMl5 based view
@@ -18,6 +19,8 @@ import java.nio.file.Path;
  * This has to be implemented in Java, else IntelliJ will not work properly
  */
 public class WebViewWindow implements Disposable {
+
+    private static Logger logger = Logger.getLogger("Java Profiler Plugin WebViewWindow");
 
     private final JBCefBrowser browser;
     private final String url;
@@ -27,6 +30,7 @@ public class WebViewWindow implements Disposable {
                 (classLocation) -> PsiUtils.INSTANCE.getFileContent(project,
                 classLocation.klass, classLocation.pkg), (dest) -> PsiUtils.INSTANCE.navigateToClass(project,
                 dest.klass, dest.pkg, dest.line, dest.method));
+        logger.info("URL: " + url);
         browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).setUrl(url).build();
         Disposer.register(project, browser);
         // launching a browser properly is hard...
