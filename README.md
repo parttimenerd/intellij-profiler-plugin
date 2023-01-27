@@ -6,7 +6,8 @@
 
 <!-- Plugin description -->
 
-A profiler plugin for JDK 11+ based on JFR and [Firefox Profiler](https://github.com/firefox-devtools/profiler).
+An open-source profiler plugin for JDK 11+ based on JFR and [Firefox Profiler](https://github.com/firefox-devtools/profiler)
+which allows you to profile your Java applications with JFR and async-profiler and to view JFR files.
 
 It allows you to profile your Java application with JFR and async-profiler and view the results in IntelliJ IDEA,
 as well as opening JFR files.
@@ -14,22 +15,15 @@ as well as opening JFR files.
 It is essentially a thin wrapper around the [jfrtofp-server](https://github.com/parttimenerd/jfrtofp-server) library
 which is a bundle of the [JFR to FirefoxProfiler converter](https://github.com/parttimenerd/jfrtofp) and a
 [custom firefox profiler distribution](https://github.com/parttimenerd/firefox-profiler/tree/merged)
-which includes many of our own PRs which are not yet upstream (and might be less stable).
+which includes many of our own PRs which are not yet upstream.
 
 It uses [ap-loader](https://github.com/jvm-profiling-tools/ap-loader) for async-profiler integration.
 
-This plugin is currently in a very early stage, it might run into out of memory issues and not all expected
-features are implemented yet. I tested it only on Mac so far, but it should work on other Unixes too.
-Windows users might still encounter issues.
-
-It is the first and only open source IntelliJ profiler plugin, so give it a try!
-
-For simplicity, no configuration of the profiling is possible.
-This might change, when the need arises. The plugin currently stores the gathered
-profile in a `profile.jfr` file in the project root. It uses the profiling configuration of JFR
-and wall clock profiling with jfrsync for async-profiler.
+This plugin is currently under heavy development; feel free to try it and open issues for any bugs or suggestions.
 
 <!-- Plugin description end -->
+
+It is the first and only open source IntelliJ profiler plugin, so give it a try!
 
 ## Goals
 - run JFR with some settings on all run configurations
