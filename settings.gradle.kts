@@ -1,1 +1,1 @@
-rootProject.name = "Java Profiler"
+rootProject.name = "Java JFR Profiler"

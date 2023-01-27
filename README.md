@@ -47,7 +47,7 @@ It is the first and only open source IntelliJ profiler plugin, so give it a try!
 
 - Using IDE built-in plugin system:
 
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Java Profiler Plugin"</kbd> >
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Java JFR Profiler"</kbd> >
   <kbd>Install Plugin</kbd>
 
 - Manually:

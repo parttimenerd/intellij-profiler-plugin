@@ -5,7 +5,7 @@ group = "me.bechberger"
 description = "A profiler plugin for Java based on JFR and Firefox Profiler"
 
 inner class ProjectInfo {
-    val longName = "Java Profiler"
+    val longName = "Java Profiler and JFR Profile Viewer"
     val website = "https://github.com/parttimenerd/intellij-profiler-plugin"
     val scm = "git@github.com:parttimenerd/intellij-profiler-plugin.git"
 }
