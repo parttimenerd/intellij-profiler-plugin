@@ -42,7 +42,8 @@ data class ConversionConfig(
     val includeInitialSystemProperty: Boolean = false,
     val includeInitialEnvironmentVariables: Boolean = false,
     val includeSystemProcesses: Boolean = false,
-    val ignoredEvents: MutableList<String> = Config.DEFAULT_IGNORED_EVENTS.toMutableList()
+    val ignoredEvents: MutableList<String> = Config.DEFAULT_IGNORED_EVENTS.toMutableList(),
+    val minRequiredItemsPerThread: Int = Config.DEFAULT_MIN_ITEMS_PER_THREAD,
 ) {
     fun toConfig(): Config {
         return Config(
@@ -54,7 +55,8 @@ data class ConversionConfig(
             includeInitialSystemProperty = includeInitialSystemProperty,
             includeInitialEnvironmentVariables = includeInitialEnvironmentVariables,
             includeSystemProcesses = includeSystemProcesses,
-            ignoredEvents = ignoredEvents.toSet()
+            ignoredEvents = ignoredEvents.toSet(),
+            minRequiredItemsPerThread = minRequiredItemsPerThread
         )
     }
 }
