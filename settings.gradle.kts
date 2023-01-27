@@ -1,1 +1,1 @@
-rootProject.name = "Java Profiler Plugin"
+rootProject.name = "Java Profiler"
