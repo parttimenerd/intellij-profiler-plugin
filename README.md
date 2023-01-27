@@ -6,11 +6,19 @@
 
 <!-- Plugin description -->
 
-An open-source profiler plugin for JDK 11+ based on JFR and [Firefox Profiler](https://github.com/firefox-devtools/profiler)
-which allows you to profile your Java applications with JFR and async-profiler and to view JFR files.
+An open-source profiler plugin for JDK 11+:
+
+- based on JFR, async-profiler and [Firefox Profiler](https://github.com/firefox-devtools/profiler)
+- allows you to profile your Java applications directly in IntelliJ
+  - with JFR and async-profiler
+- view JFR files directly in the IDE
 
 It allows you to profile your Java application with JFR and async-profiler and view the results in IntelliJ IDEA,
 as well as opening JFR files.
+
+This plugin is currently under heavy development; feel free to try it and open issues for any bugs or suggestions.
+
+<!-- Plugin description end -->
 
 It is essentially a thin wrapper around the [jfrtofp-server](https://github.com/parttimenerd/jfrtofp-server) library
 which is a bundle of the [JFR to FirefoxProfiler converter](https://github.com/parttimenerd/jfrtofp) and a
@@ -18,10 +26,6 @@ which is a bundle of the [JFR to FirefoxProfiler converter](https://github.com/p
 which includes many of our own PRs which are not yet upstream.
 
 It uses [ap-loader](https://github.com/jvm-profiling-tools/ap-loader) for async-profiler integration.
-
-This plugin is currently under heavy development; feel free to try it and open issues for any bugs or suggestions.
-
-<!-- Plugin description end -->
 
 It is the first and only open source IntelliJ profiler plugin, so give it a try!
 
