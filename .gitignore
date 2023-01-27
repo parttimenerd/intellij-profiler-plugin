@@ -9,3 +9,9 @@ build
 .gradle
 .DS_STORE
 .idea
+Java Profiler Plugin.ipr
+Java Profiler Plugin.iws
+test-project/.profileconfig.json
+test-project/flight.json.gz
+test-project/profile.jfr
+
