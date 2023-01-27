@@ -85,7 +85,7 @@ object PsiUtils {
     private fun compareTypes(psiType: PsiType, type: String): Boolean {
         return when (psiType) {
             is JvmReferenceType -> {
-                psiType.name == type
+                psiType.name == type.split("$").last()
             }
 
             is PsiArrayType -> {
