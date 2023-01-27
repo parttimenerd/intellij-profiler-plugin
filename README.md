@@ -20,6 +20,10 @@ This plugin is currently under heavy development; feel free to try it and open i
 
 <!-- Plugin description end -->
 
+It is not yet available on the JetBrains plugin repository, but you can download the latest version from the
+[here](https://github.com/parttimenerd/intellij-profiler-plugin/releases/download/latest/Java.JFR.Profiler-all.jar)
+and install it manually in IntelliJ using the "Install Plugin from Disk" action.
+
 It is essentially a thin wrapper around the [jfrtofp-server](https://github.com/parttimenerd/jfrtofp-server) library
 which is a bundle of the [JFR to FirefoxProfiler converter](https://github.com/parttimenerd/jfrtofp) and a
 [custom firefox profiler distribution](https://github.com/parttimenerd/firefox-profiler/tree/merged)
