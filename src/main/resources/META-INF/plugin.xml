@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.github.parttimenerd.jfrplugin.plugin</id>
-    <name>JFR Profiler</name>
+    <name>Java Profiler</name>
     <version>0.0.2-beta</version>
     <vendor email="me@mostlynerdless.de" url="https://mostlynerdless.de">Johannes Bechberger</vendor>
 
