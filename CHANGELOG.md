@@ -4,10 +4,8 @@
 
 ## [Unreleased]
 
-- Implement basic functionality for FOSDEM talk
-- support async-profiler using [ap-loader](https://github.com/jvm-profiling-tools/ap-loader) on supported platforms
-- add custom JFR configuration
-  - emits CPU events more frequently
+- Implement minimal viable product
+- Support async-profiler using [ap-loader](https://github.com/jvm-profiling-tools/ap-loader) on supported platforms
 
 ## [0.0.1] - 2022-09-15
 - Initial project scaffold

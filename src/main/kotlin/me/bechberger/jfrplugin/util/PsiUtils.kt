@@ -25,7 +25,7 @@ object PsiUtils {
                 findClass(project, className, pkg)?.let { klass ->
                     klass.findFile()?.let { file ->
                         if (file.isProbablyDecompiled()) {
-                            navigateToDecompiledClass(project, klass, method)
+                            navigateToDecompiledClass(klass, method)
                         } else {
                             OpenFileDescriptor(project, file.virtualFile, line - 1, 0).navigate(true)
                         }
@@ -48,7 +48,7 @@ object PsiUtils {
         }
     }
 
-    private fun navigateToDecompiledClass(project: Project, klass: PsiClass, method: String) {
+    private fun navigateToDecompiledClass(klass: PsiClass, method: String) {
         getMethodInClass(klass, method)?.let { psiMethod ->
             psiMethod.navigate(true)
         }
