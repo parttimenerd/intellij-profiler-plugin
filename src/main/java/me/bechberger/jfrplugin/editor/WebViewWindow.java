@@ -23,9 +23,10 @@ public class WebViewWindow implements Disposable {
     private final String url;
 
     public WebViewWindow(Project project, Config config, Path file) {
-        this.url = Server.startIfNeededAndGetUrl(file, config, (classLocation) -> PsiUtils.INSTANCE.getFileContent(project,
+        this.url = Server.startIfNeededAndGetUrl(file, config,
+                (classLocation) -> PsiUtils.INSTANCE.getFileContent(project,
                 classLocation.klass, classLocation.pkg), (dest) -> PsiUtils.INSTANCE.navigateToClass(project,
-                dest.klass, dest.pkg, dest.line));
+                dest.klass, dest.pkg, dest.line, dest.method));
         browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).setUrl(url).build();
         Disposer.register(project, browser);
         // launching a browser properly is hard...
