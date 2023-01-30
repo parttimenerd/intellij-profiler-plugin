@@ -31,7 +31,7 @@ which includes many of our own PRs which are not yet upstream.
 
 It uses [ap-loader](https://github.com/jvm-profiling-tools/ap-loader) for async-profiler integration.
 
-It is the first and only open source IntelliJ profiler plugin, so give it a try!
+It is the first fully fledged open source IntelliJ profiler plugin, so give it a try!
 
 ## Goals
 - run JFR with some settings on all run configurations

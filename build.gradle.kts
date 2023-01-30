@@ -134,6 +134,12 @@ tasks.register<Copy>("copyHooks") {
     into(".git/hooks")
 }
 
+tasks {
+    buildSearchableOptions {
+        enabled = false
+    }
+}
+
 tasks.findByName("build")?.dependsOn(tasks.findByName("copyHooks"))
 
 tasks {
