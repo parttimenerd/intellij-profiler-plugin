@@ -1,8 +1,8 @@
 # Java Profiler Plugin
 
 ![Build](https://github.com/parttimenerd/intellij-profiler-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
+[![Version](https://img.shields.io/jetbrains/plugin/v/20937-java-jfr-profiler.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/20937-java-jfr-profiler.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
 
 <!-- Plugin description -->
 
@@ -20,7 +20,10 @@ This plugin is currently under heavy development; feel free to try it and open i
 
 <!-- Plugin description end -->
 
-It is not yet available on the JetBrains plugin repository, but you can download the latest version from the
+It is available as [Java JFR Profiler](https://plugins.jetbrains.com/plugin/20937-java-jfr-profiler)
+in the JetBrains marketplace.
+
+You can also download the latest version from
 [here](https://github.com/parttimenerd/intellij-profiler-plugin/releases/download/latest/Java.JFR.Profiler-all.jar)
 and install it manually in IntelliJ using the "Install Plugin from Disk" action.
 
