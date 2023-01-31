@@ -1,8 +1,8 @@
 # Java Profiler Plugin
 
 ![Build](https://github.com/parttimenerd/intellij-profiler-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/20937-java-jfr-profiler.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/20937-java-jfr-profiler.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
+[![Version](https://img.shields.io/jetbrains/plugin/v/20937-java-jfr-profiler.svg)](https://plugins.jetbrains.com/plugin/20937-java-jfr-profiler)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/20937-java-jfr-profiler.svg)](https://plugins.jetbrains.com/plugin/20937-java-jfr-profiler)
 
 <!-- Plugin description -->
 
@@ -19,6 +19,29 @@ as well as opening JFR files.
 This plugin is currently under heavy development; feel free to try it and open issues for any bugs or suggestions.
 
 <!-- Plugin description end -->
+
+See my blog post [Firefox Profiler beyond the web](https://mostlynerdless.de/blog/2023/01/31/firefox-profiler-beyond-the-web/)
+for a detailed description and how I ended up there.
+
+In the following a few screenshots.
+
+My plugin adds a context menu for profiling:
+
+![Context Menu](https://mostlynerdless.de/wp-content/uploads/2023/01/Screenshot-2023-01-27-at-12.31.55-2048x1230.png)
+
+And opens the profile automatically afterwards. But you can open arbitrary JFR files:
+
+![Opened Profile](https://mostlynerdless.de/wp-content/uploads/2023/01/Screenshot-2023-01-27-at-12.32.55-2048x1230.png)
+
+You can double-click on a method in the profiler and thereby navigate to the method in the IDE, or
+you can shift-double-click and view the source code directly in the profiler, with some additional
+information on the left:
+
+![Source Code View](https://mostlynerdless.de/wp-content/uploads/2023/01/Screenshot-2023-01-27-at-12.34.45-1-2048x1230.png)
+
+Besides that, it has support for showing information on all JFR events:
+
+![JFR Event View](https://mostlynerdless.de/wp-content/uploads/2023/01/Screenshot-2023-01-27-at-12.33.49-2048x1230.png)
 
 It is available as [Java JFR Profiler](https://plugins.jetbrains.com/plugin/20937-java-jfr-profiler)
 in the JetBrains marketplace.
@@ -45,48 +68,5 @@ It is the first fully fledged open source IntelliJ profiler plugin, so give it a
 - fully fledged analysis
 - JDK Mission Control replacement
 
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [x] Get familiar with the [template documentation][template].
-- [x] Verify the [pluginGroup](/gradle.properties), [plugin ID](/src/main/resources/META-INF/plugin.xml) and [sources package](/src/main/kotlin).
-- [x] Review the [Legal Agreements](https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html).
-- [ ] [Publish a plugin manually](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate) for the first time.
-- [ ] Set the Plugin ID in the above README badges.
-- [ ] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html).
-
-## Installation
-
-- Using IDE built-in plugin system:
-
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Java JFR Profiler"</kbd> >
-  <kbd>Install Plugin</kbd>
-
-- Manually:
-
-  Download the [latest release](https://github.com/parttimenerd/intellij-profiler-plugin/releases/download/latest/Java.Profiler.Plugin-all.jar) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
-
-
----
-Plugin based on the [IntelliJ Platform Plugin Template][template].
-
-[template]: https://github.com/JetBrains/intellij-platform-plugin-template
-
-
-TODO
-====
-- [x] fix unknown threads
-- [x] support opening .json.gz files
-- [x] add ap-loader support
-- [x] fix startup profile files problem
-- [x] add support for custom JFR configs
-- [x] add support for custom ap-loader configs
-  - both with extra files in the project folder
-- [ ] fileGetter and navigate for proper IDE integration
-  - [x] basic support for simple classes
-  - [ ] support for inner classes
-  - [ ] support for anonymous classes, lambdas, ...
-  - [ ] support for decompiled classes
-  - [ ] support for kotlin
-- [x] project boundaries
-  - implemented via conversion config, so user defines it
+## License
+MIT
