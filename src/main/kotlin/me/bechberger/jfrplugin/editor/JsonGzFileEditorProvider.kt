@@ -19,8 +19,6 @@ class JsonGzFileEditorProvider : AsyncFileEditorProvider, DumbAware {
         val wordsToLookFor = mutableSetOf(
             "\"name\"",
             "\"startTime\"",
-            "\"endTime\"",
-            "\"duration\"",
             "\"category\"",
             "\"meta\"",
             "\"threads\"",
@@ -28,8 +26,7 @@ class JsonGzFileEditorProvider : AsyncFileEditorProvider, DumbAware {
             "\"interval\"",
             "\"processType\"",
             "\"product\"",
-            "\"stackWalk\"",
-            "\"symbolicated\""
+            "\"markerSchema\""
         )
         GZIPInputStream(file.inputStream).bufferedReader().use { reader ->
             while (wordsToLookFor.isNotEmpty()) {
