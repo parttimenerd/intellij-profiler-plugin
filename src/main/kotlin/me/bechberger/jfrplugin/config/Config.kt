@@ -119,3 +119,7 @@ val Project.jfrVirtualFile
 
 val Project.jfrSettingsFile
     get() = ProfilerConfig.fileNameToPath(this, profilerConfig.jfrConfig.settings)
+
+fun Project.deleteJFRFile() {
+    Files.deleteIfExists(jfrFile)
+}
