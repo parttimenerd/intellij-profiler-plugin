@@ -73,8 +73,9 @@ data class ProfilerConfig(
         return fileNameToPath(project, file)
     }
 
-    fun getJFRVirtualFile(project: Project): VirtualFile {
-        return VirtualFileManager.getInstance().findFileByUrl("file://${getJFRFile(project)}")!!
+    /** null if not existing */
+    fun getJFRVirtualFile(project: Project): VirtualFile? {
+        return VirtualFileManager.getInstance().refreshAndFindFileByNioPath(getJFRFile(project))
     }
 
     private fun write(configFile: Path) = Files.writeString(configFile, jsonFormat.encodeToString(this))

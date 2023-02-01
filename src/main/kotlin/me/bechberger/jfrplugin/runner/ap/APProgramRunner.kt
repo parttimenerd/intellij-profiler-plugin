@@ -84,7 +84,9 @@ class APProgramRunner : DefaultJavaProgramRunner() {
                     super.processTerminated(event)
 
                     ApplicationManager.getApplication().invokeLater {
-                        OpenFileDescriptor(project, project.jfrVirtualFile).navigate(true)
+                        project.jfrVirtualFile?.let {
+                            OpenFileDescriptor(project, it).navigate(true)
+                        }
                     }
                 }
             })
