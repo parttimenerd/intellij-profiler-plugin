@@ -48,7 +48,6 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
             val vmParametersList = javaParameters.vmParametersList
             vmParametersList.add("-XX:+UnlockDiagnosticVMOptions")
             vmParametersList.add("-XX:+DebugNonSafepoints")
-            vmParametersList.add("-XX:+FlightRecorder")
             val project = (runProfile as RunConfigurationBase<*>).project
             vmParametersList.add(
                 "-XX:StartFlightRecording=filename=${project.jfrFile}," +
@@ -57,6 +56,9 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
             ProjectRootManager.getInstance(project).projectSdk?.versionString?.let {
                 if (!it.matches(".*(8|9|10|11|12|13|14|15|16)[.][0-9]+[.][0-9]+.*".toRegex())) {
                     vmParametersList.add("-Xlog:jfr+startup=error")
+                }
+                if (it.matches(".*(8|9|10|11|12)[.][0-9]+[.][0-9]+.*".toRegex())) {
+                    vmParametersList.add("-XX:+FlightRecorder")
                 }
             }
         }
