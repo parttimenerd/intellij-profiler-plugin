@@ -43,7 +43,7 @@ data class ConversionConfig(
     val includeInitialEnvironmentVariables: Boolean = false,
     val includeSystemProcesses: Boolean = false,
     val ignoredEvents: MutableList<String> = Config.DEFAULT_IGNORED_EVENTS.toMutableList(),
-    val minRequiredItemsPerThread: Int = Config.DEFAULT_MIN_ITEMS_PER_THREAD,
+    val minRequiredItemsPerThread: Int = Config.DEFAULT_MIN_ITEMS_PER_THREAD
 ) {
     fun toConfig(): Config {
         return Config(
