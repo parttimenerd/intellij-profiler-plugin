@@ -6,12 +6,15 @@
 
 <!-- Plugin description -->
 
-An open-source profiler plugin for JDK 11+:
+An open-source profiler plugin for JDK 11+ based on JFR, async-profiler
+and [Firefox Profiler](https://github.com/firefox-devtools/profiler)
 
-- based on JFR, async-profiler and [Firefox Profiler](https://github.com/firefox-devtools/profiler)
-- allows you to profile your Java applications directly in IntelliJ
+This plugin supports
+
+- profiling your Java applications directly in IntelliJ
   - with JFR and async-profiler
-- view JFR files directly in the IDE
+- viewing JFR files
+- showing flamegraphs, call trees and more
 
 It allows you to profile your Java application with JFR and async-profiler and view the results in IntelliJ IDEA,
 as well as opening JFR files.

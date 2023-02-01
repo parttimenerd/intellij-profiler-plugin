@@ -1,13 +1,8 @@
 <idea-plugin>
     <id>me.bechberger.jfrplugin</id>
     <name>Java JFR Profiler</name>
-    <version>0.0.2-beta</version>
+    <version>0.0.3</version>
     <vendor email="me@mostlynerdless.de" url="https://mostlynerdless.de">Johannes Bechberger</vendor>
-
-    <description><![CDATA[
-      Simple profiler front-end for JFR. Measures methods (based on monitoring settings in current
-      'Run configuration') and displays results as a call tree in a tool window.
-    ]]></description>
 
     <change-notes>
     </change-notes>
