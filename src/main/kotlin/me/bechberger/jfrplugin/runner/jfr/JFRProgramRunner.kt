@@ -17,10 +17,10 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
+import me.bechberger.jfrplugin.config.deleteJFRFile
 import me.bechberger.jfrplugin.config.jfrFile
 import me.bechberger.jfrplugin.config.jfrSettingsFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
-import me.bechberger.jfrplugin.config.deleteJFRFile
 import org.jetbrains.concurrency.Promise
 
 class JFRProgramRunner : DefaultJavaProgramRunner() {
