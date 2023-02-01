@@ -20,6 +20,7 @@ import com.intellij.openapi.roots.ProjectRootManager
 import me.bechberger.jfrplugin.config.jfrFile
 import me.bechberger.jfrplugin.config.jfrSettingsFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
+import me.bechberger.jfrplugin.config.deleteJFRFile
 import org.jetbrains.concurrency.Promise
 
 class JFRProgramRunner : DefaultJavaProgramRunner() {
@@ -63,6 +64,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
 
     @Throws(ExecutionException::class)
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
+        environment.project.deleteJFRFile()
         val descriptor = super.doExecute(state, environment)
         workWithDescriptor(descriptor, environment.project)
         return descriptor
@@ -72,6 +74,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
         state: TargetEnvironmentAwareRunProfileState,
         env: ExecutionEnvironment
     ): Promise<RunContentDescriptor?> {
+        env.project.deleteJFRFile()
         return super.doExecuteAsync(state, env)
             .then { descriptor -> workWithDescriptor(descriptor, env.project); return@then descriptor }
     }

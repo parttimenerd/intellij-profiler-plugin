@@ -16,6 +16,7 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
+import me.bechberger.jfrplugin.config.deleteJFRFile
 import me.bechberger.jfrplugin.config.jfrFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
 import me.bechberger.jfrplugin.config.profilerConfig
@@ -63,6 +64,7 @@ class APProgramRunner : DefaultJavaProgramRunner() {
 
     @Throws(ExecutionException::class)
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
+        environment.project.deleteJFRFile()
         val descriptor = super.doExecute(state, environment)
         workWithDescriptor(descriptor, environment.project)
         return descriptor
@@ -72,6 +74,7 @@ class APProgramRunner : DefaultJavaProgramRunner() {
         state: TargetEnvironmentAwareRunProfileState,
         env: ExecutionEnvironment
     ): Promise<RunContentDescriptor?> {
+        env.project.deleteJFRFile()
         return super.doExecuteAsync(state, env)
             .then { descriptor -> workWithDescriptor(descriptor, env.project); return@then descriptor }
     }
