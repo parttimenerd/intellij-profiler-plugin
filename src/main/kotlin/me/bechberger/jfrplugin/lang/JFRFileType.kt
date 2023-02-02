@@ -6,7 +6,7 @@ import me.bechberger.jfrplugin.util.JFRPluginIcons
 object JFRFileType : FileType {
     override fun getIcon() = JFRPluginIcons.MAIN_ICON
 
-    override fun getName() = "JFR"
+    override fun getName() = "JDK Flight Recorder"
 
     override fun getDefaultExtension() = "jfr"
 

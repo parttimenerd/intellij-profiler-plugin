@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>me.bechberger.jfrplugin</id>
     <name>Java JFR Profiler</name>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
     <vendor email="me@mostlynerdless.de" url="https://mostlynerdless.de">Johannes Bechberger</vendor>
 
     <change-notes>
@@ -19,9 +19,10 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <fileType name="JFR"
+        <fileType name="JDK Flight Recorder"
                   extensions="jfr"
-                  language="JFR"
+                  language="JDK Flight Recorder"
+                  patterns="*.jfr"
                   fieldName="INSTANCE"
                   implementationClass="me.bechberger.jfrplugin.lang.JFRFileType"/>
         <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JFRFileEditorProvider"/>

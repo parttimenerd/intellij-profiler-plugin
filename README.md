@@ -7,7 +7,7 @@
 <!-- Plugin description -->
 
 An open-source profiler plugin for JDK 11+ based on JFR, async-profiler
-and [Firefox Profiler](https://github.com/firefox-devtools/profiler)
+and [Firefox Profiler](https://github.com/firefox-devtools/profiler).
 
 This plugin supports
 
