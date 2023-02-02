@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixed plugin logo color
+  - It was different in the web and in Java renderings
+
 ## [0.0.4]
 
 ### Changed
