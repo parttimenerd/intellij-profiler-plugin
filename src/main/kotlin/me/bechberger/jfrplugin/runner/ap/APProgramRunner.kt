@@ -20,13 +20,14 @@ import me.bechberger.jfrplugin.config.deleteJFRFile
 import me.bechberger.jfrplugin.config.jfrFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
 import me.bechberger.jfrplugin.config.profilerConfig
+import me.bechberger.jfrplugin.util.isAsyncProfilerSupported
 import one.profiler.AsyncProfilerLoader
 import org.jetbrains.concurrency.Promise
 
 class APProgramRunner : DefaultJavaProgramRunner() {
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
-        return AsyncProfilerLoader.isSupported() && try {
+        return isAsyncProfilerSupported() && try {
             (
                 executorId == APExecutor.EXECUTOR_ID &&
                     profile !is RunConfigurationWithSuppressedDefaultRunAction &&

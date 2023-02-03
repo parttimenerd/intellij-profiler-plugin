@@ -4,9 +4,12 @@
 
 ## [Unreleased]
 
+## [0.0.5]
+
 ### Fixed
 - Fixed plugin logo color
   - It was different in the web and in Java renderings
+- Fix Windows related issue #7
 
 ## [0.0.4]
 

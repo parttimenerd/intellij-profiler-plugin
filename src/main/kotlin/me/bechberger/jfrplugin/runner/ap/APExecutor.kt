@@ -4,7 +4,7 @@ import com.intellij.execution.Executor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.IconLoader
-import one.profiler.AsyncProfilerLoader
+import me.bechberger.jfrplugin.util.isAsyncProfilerSupported
 import javax.swing.Icon
 
 class APExecutor : Executor() {
@@ -50,7 +50,7 @@ class APExecutor : Executor() {
     }
 
     override fun isApplicable(project: Project): Boolean {
-        return AsyncProfilerLoader.isSupported()
+        return isAsyncProfilerSupported()
     }
 
     companion object {

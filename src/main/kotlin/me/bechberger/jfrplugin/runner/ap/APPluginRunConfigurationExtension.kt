@@ -4,7 +4,7 @@ import com.intellij.execution.RunConfigurationExtension
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunnerSettings
-import one.profiler.AsyncProfilerLoader
+import me.bechberger.jfrplugin.util.isAsyncProfilerSupported
 import org.jdom.Element
 
 /**
@@ -21,7 +21,7 @@ class APPluginRunConfigurationExtension : RunConfigurationExtension() {
     }
 
     override fun isEnabledFor(configuration: RunConfigurationBase<*>, runnerSettings: RunnerSettings?): Boolean {
-        return AsyncProfilerLoader.isSupported()
+        return isAsyncProfilerSupported()
     }
 
     override fun <T : RunConfigurationBase<*>> updateJavaParameters(
