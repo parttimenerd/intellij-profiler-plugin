@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+## [0.0.6]
 ### Fixed
 - Fix `alloc` usage of async-profiler #8
 - Fix detection of Java versions without support to turn off JFR logger #10
