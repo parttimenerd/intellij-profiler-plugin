@@ -29,10 +29,6 @@ plugins {
 
     id("com.github.johnrengelman.shadow") version "7.1.2"
 
-    id("io.gitlab.arturbosch.detekt") version "1.21.0"
-
-    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
-
     `maven-publish`
 
     // Apply the application plugin to add support for building a CLI application in Java.
@@ -47,19 +43,6 @@ plugins {
 }
 
 apply { plugin("com.github.johnrengelman.shadow") }
-
-detekt {
-    buildUponDefaultConfig = true // preconfigure defaults
-    //  config = files("$rootDir/config/detekt/detekt.yml")
-    autoCorrect = true
-}
-
-tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-    jvmTarget = "11"
-}
-tasks.withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
-    jvmTarget = "11"
-}
 
 java {
     toolchain {
@@ -106,7 +89,6 @@ dependencies {
 
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     implementation("me.bechberger:jfrtofp-server:0.0.2-SNAPSHOT") {
