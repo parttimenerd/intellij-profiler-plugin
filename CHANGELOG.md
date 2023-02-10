@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fix `alloc` usage of async-profiler #8
+
 ## [0.0.5]
 
 ### Fixed

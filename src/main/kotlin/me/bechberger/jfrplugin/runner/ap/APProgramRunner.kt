@@ -56,7 +56,7 @@ class APProgramRunner : DefaultJavaProgramRunner() {
             vmParametersList.add(
                 "-agentpath:$asyncProfiler=start,event=${conf.event},loglevel=WARN," +
                     "file=${project.jfrFile}" +
-                    (if (conf.alloc) ",alloc" else "") +
+                    (if (conf.alloc) ",alloc=512k" else "") +
                     "${if (conf.jfrsync) ",jfrsync" else ""}," +
                     "jfr${if (conf.misc.isNotBlank()) ",${conf.misc}" else ""}"
             )
