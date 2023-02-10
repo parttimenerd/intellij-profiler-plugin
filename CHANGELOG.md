@@ -7,6 +7,7 @@
 ### Fixed
 - Fix `alloc` usage of async-profiler #8
 - Fix detection of Java versions without support to turn off JFR logger #10
+- Fix adding VM parameters to the run configuration #9
 
 ## [0.0.5]
 

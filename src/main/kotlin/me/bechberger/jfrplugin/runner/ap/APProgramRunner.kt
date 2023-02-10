@@ -1,11 +1,9 @@
 package me.bechberger.jfrplugin.runner.ap
 
 import com.intellij.execution.ExecutionException
-import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.impl.DefaultJavaProgramRunner
 import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.execution.process.ProcessEvent
@@ -17,11 +15,8 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import me.bechberger.jfrplugin.config.deleteJFRFile
-import me.bechberger.jfrplugin.config.jfrFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
-import me.bechberger.jfrplugin.config.profilerConfig
 import me.bechberger.jfrplugin.util.isAsyncProfilerSupported
-import one.profiler.AsyncProfilerLoader
 import org.jetbrains.concurrency.Promise
 
 class APProgramRunner : DefaultJavaProgramRunner() {
@@ -35,31 +30,6 @@ class APProgramRunner : DefaultJavaProgramRunner() {
                 )
         } catch (_: Exception) {
             false
-        }
-    }
-
-    @Throws(ExecutionException::class)
-    override fun patch(
-        javaParameters: JavaParameters,
-        settings: RunnerSettings?,
-        runProfile: RunProfile,
-        beforeExecution: Boolean
-    ) {
-        super.patch(javaParameters, settings, runProfile, beforeExecution)
-        if (beforeExecution) {
-            val project = (runProfile as RunConfigurationBase<*>).project
-            val vmParametersList = javaParameters.vmParametersList
-            vmParametersList.add("-XX:+UnlockDiagnosticVMOptions")
-            vmParametersList.add("-XX:+DebugNonSafepoints")
-            val asyncProfiler = AsyncProfilerLoader.getAsyncProfilerPath()
-            val conf = project.profilerConfig.asyncProfilerConfig
-            vmParametersList.add(
-                "-agentpath:$asyncProfiler=start,event=${conf.event},loglevel=WARN," +
-                    "file=${project.jfrFile}" +
-                    (if (conf.alloc) ",alloc=512k" else "") +
-                    "${if (conf.jfrsync) ",jfrsync" else ""}," +
-                    "jfr${if (conf.misc.isNotBlank()) ",${conf.misc}" else ""}"
-            )
         }
     }
 

@@ -1,11 +1,9 @@
 package me.bechberger.jfrplugin.runner.jfr
 
 import com.intellij.execution.ExecutionException
-import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.impl.DefaultJavaProgramRunner
 import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.execution.process.ProcessEvent
@@ -16,10 +14,7 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectRootManager
 import me.bechberger.jfrplugin.config.deleteJFRFile
-import me.bechberger.jfrplugin.config.jfrFile
-import me.bechberger.jfrplugin.config.jfrSettingsFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
 import org.jetbrains.concurrency.Promise
 
@@ -33,34 +28,6 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
                 )
         } catch (_: Exception) {
             false
-        }
-    }
-
-    @Throws(ExecutionException::class)
-    override fun patch(
-        javaParameters: JavaParameters,
-        settings: RunnerSettings?,
-        runProfile: RunProfile,
-        beforeExecution: Boolean
-    ) {
-        super.patch(javaParameters, settings, runProfile, beforeExecution)
-        if (beforeExecution) {
-            val vmParametersList = javaParameters.vmParametersList
-            vmParametersList.add("-XX:+UnlockDiagnosticVMOptions")
-            vmParametersList.add("-XX:+DebugNonSafepoints")
-            val project = (runProfile as RunConfigurationBase<*>).project
-            vmParametersList.add(
-                "-XX:StartFlightRecording=filename=${project.jfrFile}," +
-                    "settings='${project.jfrSettingsFile}',dumponexit=true"
-            )
-            ProjectRootManager.getInstance(project).projectSdk?.versionString?.let {
-                if (!it.matches("(.*1[.][0-9][.].+)|(.*(8|9|10|11|12|13|14|15|16)[.][0-9]+[.][0-9]+.*)".toRegex())) {
-                    vmParametersList.add("-Xlog:jfr+startup=error")
-                }
-                if (it.matches(".*(8|9|10|11|12)[.][0-9]+[.][0-9]+.*".toRegex())) {
-                    vmParametersList.add("-XX:+FlightRecorder")
-                }
-            }
         }
     }
 
