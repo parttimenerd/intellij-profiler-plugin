@@ -4,8 +4,8 @@ import com.intellij.execution.Executor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.IconLoader
-import javax.swing.Icon
 import me.bechberger.jfrplugin.util.isAsyncProfilerSupported
+import javax.swing.Icon
 
 class APExecutor : Executor() {
 
