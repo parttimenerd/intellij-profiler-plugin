@@ -54,7 +54,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
                     "settings='${project.jfrSettingsFile}',dumponexit=true"
             )
             ProjectRootManager.getInstance(project).projectSdk?.versionString?.let {
-                if (!it.matches(".*(8|9|10|11|12|13|14|15|16)[.][0-9]+[.][0-9]+.*".toRegex())) {
+                if (!it.matches("(.*1[.][0-9][.].+)|(.*(8|9|10|11|12|13|14|15|16)[.][0-9]+[.][0-9]+.*)".toRegex())) {
                     vmParametersList.add("-Xlog:jfr+startup=error")
                 }
                 if (it.matches(".*(8|9|10|11|12)[.][0-9]+[.][0-9]+.*".toRegex())) {

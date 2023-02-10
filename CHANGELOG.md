@@ -6,6 +6,7 @@
 
 ### Fixed
 - Fix `alloc` usage of async-profiler #8
+- Fix detection of Java versions without support to turn off JFR logger #10
 
 ## [0.0.5]
 
