@@ -12,10 +12,13 @@ import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAc
 import com.intellij.execution.target.TargetEnvironmentAwareRunProfileState
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
 import me.bechberger.jfrplugin.config.deleteJFRFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
+import me.bechberger.jfrplugin.editor.JFRFileEditor
 import org.jetbrains.concurrency.Promise
 
 class JFRProgramRunner : DefaultJavaProgramRunner() {
@@ -54,12 +57,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
             processHandler?.addProcessListener(object : CapturingProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
                     super.processTerminated(event)
-
-                    ApplicationManager.getApplication().invokeLater {
-                        project.jfrVirtualFile?.let {
-                            OpenFileDescriptor(project, it).navigate(true)
-                        }
-                    }
+                    loadFile(project)
                 }
             })
         }
@@ -69,5 +67,24 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
 
     companion object {
         const val RUNNER_ID = "JFR Profile Runner"
+
+        fun loadFile(project: Project) {
+            ApplicationManager.getApplication().invokeLater {
+                project.jfrVirtualFile?.let {
+                    var reloaded = false
+                    FileEditorManagerEx.getInstanceEx(project).windows.forEach { window ->
+                        window.getComposite(it)?.allEditors?.forEach { editor ->
+                            if (editor is JFRFileEditor) {
+                                editor.webViewWindow.reload()
+                                reloaded = true
+                            }
+                        }
+                    }
+                    if (!reloaded) {
+                        OpenFileDescriptor(project, it).navigate(true)
+                    }
+                }
+            }
+        }
     }
 }

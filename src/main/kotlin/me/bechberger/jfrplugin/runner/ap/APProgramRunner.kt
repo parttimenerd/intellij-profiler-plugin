@@ -16,6 +16,7 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import me.bechberger.jfrplugin.config.deleteJFRFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
+import me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner.Companion.loadFile
 import me.bechberger.jfrplugin.util.isAsyncProfilerSupported
 import org.jetbrains.concurrency.Promise
 
@@ -56,12 +57,7 @@ class APProgramRunner : DefaultJavaProgramRunner() {
             processHandler?.addProcessListener(object : CapturingProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
                     super.processTerminated(event)
-
-                    ApplicationManager.getApplication().invokeLater {
-                        project.jfrVirtualFile?.let {
-                            OpenFileDescriptor(project, it).navigate(true)
-                        }
-                    }
+                    loadFile(project)
                 }
             })
         }

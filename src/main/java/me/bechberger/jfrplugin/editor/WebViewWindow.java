@@ -58,7 +58,7 @@ public class WebViewWindow implements Disposable {
     }
 
     public void reload() {
-        browser.loadHTML(getURL());
+        browser.getCefBrowser().reload();
     }
 
     @Override
