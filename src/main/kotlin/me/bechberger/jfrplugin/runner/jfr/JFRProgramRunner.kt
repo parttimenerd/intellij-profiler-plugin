@@ -71,18 +71,14 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
         fun loadFile(project: Project) {
             ApplicationManager.getApplication().invokeLater {
                 project.jfrVirtualFile?.let {
-                    var reloaded = false
                     FileEditorManagerEx.getInstanceEx(project).windows.forEach { window ->
                         window.getComposite(it)?.allEditors?.forEach { editor ->
                             if (editor is JFRFileEditor) {
                                 editor.webViewWindow.reload()
-                                reloaded = true
                             }
                         }
                     }
-                    if (!reloaded) {
-                        OpenFileDescriptor(project, it).navigate(true)
-                    }
+                    OpenFileDescriptor(project, it).navigate(true)
                 }
             }
         }
