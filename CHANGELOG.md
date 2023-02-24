@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.0.7]
+### Fixed
+- Support Oracle JDK 11.0.6 and earlier #13
+- Fix problems with opening profile.jfr when already open #11
+- Improve opening JFR files from async-profiler (without `jfrsync`)
+
 ## [0.0.6]
 ### Fixed
 - Fix `alloc` usage of async-profiler #8
@@ -11,7 +17,6 @@
 - Fix adding VM parameters to the run configuration #9
 
 ## [0.0.5]
-
 ### Fixed
 - Fixed plugin logo color
   - It was different in the web and in Java renderings
