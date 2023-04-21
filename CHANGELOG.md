@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Removed errorHandler specification from plugin.xml #6
+
 ## [0.0.7]
 ### Fixed
 - Support Oracle JDK 11.0.6 and earlier #13

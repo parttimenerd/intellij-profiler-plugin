@@ -42,7 +42,5 @@
         <runConfigurationExtension implementation="me.bechberger.jfrplugin.runner.ap.APPluginRunConfigurationExtension"/>
         <programRunner implementation="me.bechberger.jfrplugin.runner.ap.APProgramRunner"/>
         <executor implementation="me.bechberger.jfrplugin.runner.ap.APExecutor"/>
-
-        <errorHandler implementation="me.bechberger.jfrplugin.runner.JFRErrorHandler"/>
     </extensions>
 </idea-plugin>
