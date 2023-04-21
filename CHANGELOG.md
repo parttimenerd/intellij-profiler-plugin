@@ -4,8 +4,13 @@
 
 ## [Unreleased]
 
+## [0.0.8]
+
 ### Fixed
 - Removed errorHandler specification from plugin.xml #6
+
+### Added
+- Support IntelliJ 2023.1
 
 ## [0.0.7]
 ### Fixed
