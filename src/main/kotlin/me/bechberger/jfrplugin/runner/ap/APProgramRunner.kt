@@ -11,11 +11,8 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction
 import com.intellij.execution.target.TargetEnvironmentAwareRunProfileState
 import com.intellij.execution.ui.RunContentDescriptor
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import me.bechberger.jfrplugin.config.deleteJFRFile
-import me.bechberger.jfrplugin.config.jfrVirtualFile
 import me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner.Companion.loadFile
 import me.bechberger.jfrplugin.util.isAsyncProfilerSupported
 import org.jetbrains.concurrency.Promise
@@ -51,7 +48,7 @@ class APProgramRunner : DefaultJavaProgramRunner() {
             .then { descriptor -> workWithDescriptor(descriptor, env.project); return@then descriptor }
     }
 
-    fun workWithDescriptor(descriptor: RunContentDescriptor?, project: Project) {
+    private fun workWithDescriptor(descriptor: RunContentDescriptor?, project: Project) {
         if (descriptor != null) {
             val processHandler = descriptor.processHandler
             processHandler?.addProcessListener(object : CapturingProcessAdapter() {

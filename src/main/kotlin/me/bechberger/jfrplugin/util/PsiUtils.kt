@@ -49,9 +49,7 @@ object PsiUtils {
     }
 
     private fun navigateToDecompiledClass(klass: PsiClass, method: String) {
-        getMethodInClass(klass, method)?.let { psiMethod ->
-            psiMethod.navigate(true)
-        }
+        getMethodInClass(klass, method)?.navigate(true)
     }
 
     private fun getMethodInClass(klass: PsiClass, method: String): PsiMethod? {
@@ -72,13 +70,13 @@ object PsiUtils {
         if (methodsWithReturnType.isEmpty()) {
             return methodsWithName.firstOrNull()
         }
-        return methodsWithReturnType.filter {
+        return methodsWithReturnType.firstOrNull {
             val parameterTypes = it.parameterList.parameters.map { it.type }
             parameterTypes.size == methodParts.parameterTypes.size &&
-                parameterTypes.zip(methodParts.parameterTypes).all { (psiType, typeString) ->
-                    compareTypes(psiType, typeString)
-                }
-        }.firstOrNull() ?: methodsWithReturnType.firstOrNull()
+                    parameterTypes.zip(methodParts.parameterTypes).all { (psiType, typeString) ->
+                        compareTypes(psiType, typeString)
+                    }
+        } ?: methodsWithReturnType.firstOrNull()
     }
 
     @Suppress("UnstableApiUsage")

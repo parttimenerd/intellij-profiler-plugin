@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class WebViewWindow implements Disposable {
 
-    private static Logger logger = Logger.getLogger("Java JFR Profiler WebViewWindow");
+    private static final Logger logger = Logger.getLogger("Java JFR Profiler WebViewWindow");
 
     private final JBCefBrowser browser;
     private final String url;

@@ -12,7 +12,6 @@ import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAc
 import com.intellij.execution.target.TargetEnvironmentAwareRunProfileState
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
@@ -27,7 +26,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
         return try {
             (
                 executorId == JFRExecutor.EXECUTOR_ID && profile !is RunConfigurationWithSuppressedDefaultRunAction &&
-                    profile is RunConfigurationBase<*>
+                    profile is RunConfigurationBase<*> && JFRPluginRunConfigurationExtension().isApplicableFor(profile)
                 )
         } catch (_: Exception) {
             false
@@ -51,7 +50,7 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
             .then { descriptor -> workWithDescriptor(descriptor, env.project); return@then descriptor }
     }
 
-    fun workWithDescriptor(descriptor: RunContentDescriptor?, project: Project) {
+    private fun workWithDescriptor(descriptor: RunContentDescriptor?, project: Project) {
         if (descriptor != null) {
             val processHandler = descriptor.processHandler
             processHandler?.addProcessListener(object : CapturingProcessAdapter() {

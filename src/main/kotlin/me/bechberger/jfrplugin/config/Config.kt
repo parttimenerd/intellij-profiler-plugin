@@ -5,14 +5,14 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.util.io.inputStream
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import me.bechberger.jfrtofp.processor.Config
-import java.nio.file.Files
-import java.nio.file.Path
 
 @OptIn(ExperimentalSerializationApi::class)
 val jsonFormat = Json {
@@ -62,11 +62,29 @@ data class ConversionConfig(
 }
 
 @Serializable
+data class RunTargetConf(val targetPrefix: String, val optionForVmArgs: String, val description: String = "")
+
+
+@Serializable
 data class ProfilerConfig(
     val jfrConfig: JFRConfig = JFRConfig(),
     val asyncProfilerConfig: AsyncProfilerConfig = AsyncProfilerConfig(),
     val file: String = "\$PROJECT_DIR/profile.jfr",
-    val conversionConfig: ConversionConfig = ConversionConfig()
+    val conversionConfig: ConversionConfig = ConversionConfig(),
+    val additionalGradleTargets: List<RunTargetConf> = listOf(
+        RunTargetConf(
+            "quarkus",
+            "-Djvm.args",
+            "Example quarkus config, adding profiling arguments via -Djvm.args option to the Gradle task run"
+        )
+    ),
+    val additionalMavenTargets: List<RunTargetConf> = listOf(
+        RunTargetConf(
+            "quarkus:",
+            "-Djvm.args",
+            "Example quarkus config, adding profiling arguments via -Djvm.args option to the Maven goal run"
+        )
+    )
 ) {
 
     fun getJFRFile(project: Project): Path {
@@ -82,7 +100,7 @@ data class ProfilerConfig(
 
     companion object {
 
-        const val PROFILE_CONFIG_FILE = "\$PROJECT_DIR/.profileconfig.json"
+        private const val PROFILE_CONFIG_FILE = "\$PROJECT_DIR/.profileconfig.json"
 
         fun fileNameToPath(project: Project, fileName: String): Path {
             return Path.of(fileName.replace("\$PROJECT_DIR", project.guessProjectDir()!!.path))
@@ -119,6 +137,12 @@ val Project.jfrVirtualFile
 
 val Project.jfrSettingsFile
     get() = ProfilerConfig.fileNameToPath(this, profilerConfig.jfrConfig.settings)
+
+val Project.additionalGradleTargets
+    get() = profilerConfig.additionalGradleTargets.associate { it.targetPrefix to it.optionForVmArgs }
+
+val Project.additionalMavenTargets
+    get() = profilerConfig.additionalMavenTargets.associate { it.targetPrefix to it.optionForVmArgs }
 
 fun Project.deleteJFRFile() {
     Files.deleteIfExists(jfrFile)

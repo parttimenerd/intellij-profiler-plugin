@@ -10,8 +10,8 @@ import me.bechberger.jfrplugin.config.profilerConfig
 import java.util.logging.Logger
 import javax.swing.JComponent
 
-class JFRFileEditor(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
-    val viewComponent: JComponent
+class JFRFileEditor(project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
+    private val viewComponent: JComponent
     val webViewWindow: WebViewWindow
     private val messageBusConnection = project.messageBus.connect()
     private val fileChangedListener = FileChangedListener(
