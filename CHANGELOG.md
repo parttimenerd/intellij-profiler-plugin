@@ -2,7 +2,7 @@
 
 # Java JFR Profiler
 
-## [Unreleased]
+## [0.0.11]
 
 ### Added
 - Support profiling Maven goals (including Quarkus and Spring Boot)
