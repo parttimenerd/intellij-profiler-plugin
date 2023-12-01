@@ -72,4 +72,9 @@ It is the first fully fledged open source IntelliJ profiler plugin, so give it a
 - JDK Mission Control replacement
 
 ## License
-MIT
+MIT, Copyright 2023 SAP SE or an SAP affiliate company, Johannes Bechberger
+and plugin contributors
+
+
+*This project is a prototype of the [SapMachine](https://sapmachine.io) team
+at [SAP SE](https://sap.com)*
