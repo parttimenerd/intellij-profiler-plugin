@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+### Added
+- Support profiling Maven goals (including Quarkus and Spring Boot)
+- Support profiling Quarkus Gradle tasks (Fixes #16)
+
+### Fixed
+- Fixed child nodes with same function name in call-tree
+  - Fixed it in jfrtofp: https://github.com/parttimenerd/jfrtofp/issues/6
+
+### Changed
+- Updated dependencies #19
+
 ## [0.0.10]
 
 ### Added

@@ -27,18 +27,19 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.0"
     kotlin("plugin.serialization") version "1.8.0"
 
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 
     `maven-publish`
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.16.1"
     // Gradle Changelog Plugin
-    id("org.jetbrains.changelog") version "2.0.0"
+    id("org.jetbrains.changelog") version "2.2.0"
     // Gradle Qodana Plugin
-    id("org.jetbrains.qodana") version "0.1.13"
+    id("org.jetbrains.qodana") version "2023.2.1"
+    id("com.github.ben-manes.versions") version "0.50.0"
     idea
 }
 
@@ -71,26 +72,26 @@ changelog {
 
 // Configure Gradle Qodana Plugin - read more: https://github.com/JetBrains/gradle-qodana-plugin
 qodana {
-    cachePath.set(projectDir.resolve(".qodana").canonicalPath)
-    reportPath.set(projectDir.resolve("build/reports/inspections").canonicalPath)
-    saveReport.set(true)
-    showReport.set(System.getenv("QODANA_SHOW_REPORT")?.toBoolean() ?: false)
+    resultsPath.set(projectDir.resolve("build/results/qodana").canonicalPath)
+    //reportPath.set(projectDir.resolve("build/reports/qodana").canonicalPath)
+    //saveReport.set(true)
+    //showReport.set(System.getenv("QODANA_SHOW_REPORT")?.toBoolean() ?: false)
 }
 
 dependencies {
     // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.21"))
 
     // Use the Kotlin JDK 8 standard library.
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.21")
 
     // This dependency is used by the application.
-    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    implementation("org.junit.jupiter:junit-jupiter:5.10.1")
 
     // Use the Kotlin JUnit integration.
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.21")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("me.bechberger:jfrtofp-server:0.0.2-SNAPSHOT") {
         isChanging = true
     }
@@ -183,14 +184,14 @@ tasks {
         systemProperty("jb.consents.confirmation.enabled", "false")
     }
 
-    publishPlugin {
+    /*publishPlugin {
         dependsOn("patchChangelog")
         token.set(properties("PUBLISH_TOKEN"))
         // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
-    }
+    }*/
 }
 
 repositories {
