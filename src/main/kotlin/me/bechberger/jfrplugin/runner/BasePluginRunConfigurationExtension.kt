@@ -104,7 +104,8 @@ abstract class BasePluginRunConfigurationExtension(private val name: String, pri
             gradleConfs(
                 configuration.project
             ).keys.any { task.startsWith(it) }
-        })
+        }) || listOf("Java", "Kotlin", "Application", "JAR Application")
+            .any { configuration.type.displayName.startsWith(it) }
     }
 
     abstract fun computeVmParameters(project: Project): List<String>
