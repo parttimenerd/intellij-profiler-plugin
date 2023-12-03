@@ -18,14 +18,22 @@ import org.jdom.Element
 abstract class BasePluginRunConfigurationExtension(private val name: String, private val executorId: String) :
     RunConfigurationExtension() {
 
+    private fun mergeConfs(conf1: Map<String, String>, conf2: Map<String, String>): Map<String, String> {
+        val mergedConfs = conf1.toMutableMap()
+        conf2.forEach { (key, value) ->
+            if (mergedConfs[key] == null) {
+                mergedConfs[key] = value
+            }
+        }
+        return mergedConfs
+    }
+
     private fun mavenConfs(project: Project): Map<String, String> {
-        val mavenConfs = project.additionalMavenTargets
-        return mavenConfs.ifEmpty { defaultMavenConfs }
+        return mergeConfs(project.additionalMavenTargets, defaultMavenConfs)
     }
 
     private fun gradleConfs(project: Project): Map<String, String> {
-        val gradleConfs = project.additionalGradleTargets
-        return gradleConfs.ifEmpty { defaultGradleConfs }
+        return mergeConfs(project.additionalGradleTargets, defaultGradleConfs)
     }
 
     override fun readExternal(configuration: RunConfigurationBase<*>, element: Element) = Unit
