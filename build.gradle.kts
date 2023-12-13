@@ -1,6 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import kotlin.math.sign
 
 group = "me.bechberger"
 description = "A profiler plugin for Java based on JFR and Firefox Profiler"
@@ -41,9 +42,14 @@ plugins {
     id("org.jetbrains.qodana") version "2023.2.1"
     id("com.github.ben-manes.versions") version "0.50.0"
     idea
+    signing
+    id("org.hibernate.build.maven-repo-auth") version "3.0.4"
 }
 
-apply { plugin("com.github.johnrengelman.shadow") }
+apply {
+    plugin("com.github.johnrengelman.shadow")
+    plugin("org.hibernate.build.maven-repo-auth")
+}
 
 java {
     toolchain {
@@ -192,6 +198,47 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
     }*/
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "ossrh"
+            url = uri("https://s01.oss.sonatype.org/content/repositories/releases/")
+        }
+    }
+    publications {
+        create<MavenPublication>("mavenJava") {
+            artifactId = "intellij-profiler-plugin"
+            pom {
+                name = "IntelliJ Profiler Plugin"
+                description = project.description
+                url = "https://github.com/parttimenerd/intellij-profiler-plugin"
+                version = properties("pluginVersion")
+                licenses {
+                    license {
+                        name = "MIT"
+                        url = "https://opensource.org/license/MIT/"
+                    }
+                }
+                developers {
+                    developer {
+                        name = "Johannes Bechberger"
+                        email = "me@mostlynerdless.de"
+                    }
+                }
+                scm {
+                    url = properties("pluginRepositoryUrl")
+                    connection = ProjectInfo().scm
+                    developerConnection = ProjectInfo().scm
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign(publishing.publications["mavenJava"])
 }
 
 repositories {
