@@ -2,6 +2,12 @@
 
 # Java JFR Profiler
 
+## [0.0.12]
+
+### Fixed
+- Fixed some issues with processing JFR files #14
+- Hopefully fix "minimumFractionDigits value is out of range" #24 by making it more robust
+
 ## [0.0.11]
 
 ### Added

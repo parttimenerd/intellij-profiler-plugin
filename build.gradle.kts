@@ -25,8 +25,8 @@ repositories {
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.8.0"
-    kotlin("plugin.serialization") version "1.8.0"
+    id("org.jetbrains.kotlin.jvm") version "1.9.22"
+    kotlin("plugin.serialization") version "1.9.22"
 
     id("com.github.johnrengelman.shadow") version "8.1.1"
 
@@ -86,25 +86,25 @@ qodana {
 
 dependencies {
     // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.21"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.22"))
 
     // Use the Kotlin JDK 8 standard library.
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22")
 
     // This dependency is used by the application.
     implementation("org.junit.jupiter:junit-jupiter:5.10.1")
 
     // Use the Kotlin JUnit integration.
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.21")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.22")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("me.bechberger:jfrtofp-server:0.0.2-SNAPSHOT") {
         isChanging = true
     }
-    implementation("me.bechberger:jfrtofp:0.0.3-SNAPSHOT") {
+    implementation("me.bechberger:jfrtofp:0.0.4-SNAPSHOT") {
         isChanging = true
     }
-    implementation("me.bechberger:ap-loader-all:2.9-7")
+    implementation("me.bechberger:ap-loader-all:3.0-9")
 }
 
 tasks.test {
