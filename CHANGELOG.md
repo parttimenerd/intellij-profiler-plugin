@@ -2,6 +2,11 @@
 
 # Java JFR Profiler
 
+## [0.0.13]
+
+### Added
+- Support IntelliJ 2024.2
+
 ## [0.0.12]
 
 ### Fixed
