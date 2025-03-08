@@ -2,6 +2,11 @@
 
 # Java JFR Profiler
 
+## [0.0.14]
+
+### Added
+- Support future Intellij versions by default
+
 ## [0.0.13]
 
 ### Added
