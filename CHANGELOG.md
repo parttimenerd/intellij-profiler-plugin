@@ -2,6 +2,23 @@
 
 # Java JFR Profiler
 
+## [0.0.15]
+
+### Added
+- Support IntelliJ 2025.2
+
+### Changed
+
+- Use new async-profiler version
+
+## [0.0.14]
+
+### Added
+- Support IntelliJ 2025.1
+
+### Changed
+- Use new async-profiler version
+
 ## [0.0.13]
 
 ### Added
