@@ -3,7 +3,6 @@
 ![Build](https://github.com/parttimenerd/intellij-profiler-plugin/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/20937-java-jfr-profiler.svg)](https://plugins.jetbrains.com/plugin/20937-java-jfr-profiler)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/20937-java-jfr-profiler.svg)](https://plugins.jetbrains.com/plugin/20937-java-jfr-profiler)
-[![Maven Central](https://img.shields.io/maven-central/v/me.bechberger/intellij-profiler-plugin)](https://central.sonatype.com/artifact/me.bechberger/intellij-profiler-plugin)
 
 <!-- Plugin description -->
 

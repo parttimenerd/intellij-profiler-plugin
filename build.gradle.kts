@@ -43,12 +43,12 @@ plugins {
     id("com.github.ben-manes.versions") version "0.50.0"
     idea
     signing
-    id("org.hibernate.build.maven-repo-auth") version "3.0.4"
+    //id("org.hibernate.build.maven-repo-auth") version "3.0.4"
 }
 
 apply {
     plugin("com.github.johnrengelman.shadow")
-    plugin("org.hibernate.build.maven-repo-auth")
+    //plugin("org.hibernate.build.maven-repo-auth")
 }
 
 java {

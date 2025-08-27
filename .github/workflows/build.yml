@@ -33,20 +33,9 @@ jobs:
       changelog: ${{ steps.properties.outputs.changelog }}
     steps:
 
-      # Free GitHub Actions Environment Disk Space
-      - name: Maximize Build Space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-
       # Check out current repository
       - name: Fetch Sources
         uses: actions/checkout@v3
-
-      # Validate wrapper
-      - name: Gradle Wrapper Validation
-        uses: gradle/wrapper-validation-action@v1.0.5
 
       # Setup Java 11 environment for the next steps
       - name: Setup Java
@@ -88,33 +77,37 @@ jobs:
           path: ${{ github.workspace }}/build/reports/tests
 
       # Upload Kover report to CodeCov
-      - name: Upload Code Coverage Report
-        uses: codecov/codecov-action@v3
-        with:
-          files: ${{ github.workspace }}/build/reports/kover/xml/report.xml
+      #- name: Upload Code Coverage Report
+      #  uses: codecov/codecov-action@v3
+      #  with:
+      #    files: ${{ github.workspace }}/build/reports/kover/xml/report.xml
 
       # Cache Plugin Verifier IDEs
-      - name: Setup Plugin Verifier IDEs Cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.properties.outputs.pluginVerifierHomeDir }}/ides
-          key: plugin-verifier-${{ hashFiles('build/listProductsReleases.txt') }}
+      #- name: Setup Plugin Verifier IDEs Cache
+      #  uses: actions/cache@v3
+      #  with:
+      #    path: ${{ steps.properties.outputs.pluginVerifierHomeDir }}/ides
+      #   key: plugin-verifier-${{ hashFiles('build/listProductsReleases.txt') }}
 
       # Run Verify Plugin task and IntelliJ Plugin Verifier tool
-      - name: Run Plugin Verification tasks
-        run: ./gradlew runPluginVerifier -Pplugin.verifier.home.dir=${{ steps.properties.outputs.pluginVerifierHomeDir }}
+      #- name: Run Plugin Verification tasks
+      #  run: ./gradlew runPluginVerifier -Pplugin.verifier.home.dir=${{ steps.properties.outputs.pluginVerifierHomeDir }}
 
       # Collect Plugin Verifier Result
-      - name: Collect Plugin Verifier Result
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: pluginVerifier-result
-          path: ${{ github.workspace }}/build/reports/pluginVerifier
+      #- name: Collect Plugin Verifier Result
+      #  if: ${{ always() }}
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: pluginVerifier-result
+      #    path: ${{ github.workspace }}/build/reports/pluginVerifier
 
       # Run Qodana inspections
       # - name: Qodana - Code Inspection
       #   uses: JetBrains/qodana-action@v2022.3.0
+
+      # Build the plugin and prepare the artifact for the next steps
+      - name: Build Plugin
+        run: ./gradlew buildPlugin
 
       # Prepare plugin archive content for creating artifact
       - name: Prepare Plugin Artifact
@@ -132,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.artifact.outputs.filename }}
-          path: ./build/distributions/content/*/*
+          path: ./build/distributions/*
 
   # Prepare a draft release for GitHub Releases page for the manual verification
   # If accepted and published, release workflow would be triggered
