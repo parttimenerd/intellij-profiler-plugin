@@ -6,6 +6,16 @@ on:
       - 'gradle.properties'
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.0.16)'
+        required: false
+        type: string
+      changelog:
+        description: 'Changelog for this release'
+        required: false
+        type: string
 
 jobs:
   release:
@@ -20,10 +30,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Extract pluginVersion from gradle.properties
+      - name: Extract pluginVersion
         id: get_version
         run: |
-          version=$(grep '^pluginVersion' gradle.properties | cut -d'=' -f2 | xargs)
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            version="${{ github.event.inputs.version }}"
+          else
+            version=$(grep '^pluginVersion' gradle.properties | cut -d'=' -f2 | xargs)
+          fi
           echo "pluginVersion=$version" >> $GITHUB_OUTPUT
 
       - name: Check if tag exists
@@ -64,18 +78,24 @@ jobs:
       - name: Extract changelog for this version
         id: changelog
         run: |
-          version="${{ steps.get_version.outputs.pluginVersion }}"
-          awk -v ver="$version" '
-            BEGIN {found=0}
-            /^## \[/ {
-              if (found) exit
-              if ($2 == "["ver"]") found=1
-            }
-            found && !/^## \[/ {print}
-          ' CHANGELOG.md | sed '/^$/d' > _release_changelog.txt
-          echo 'changelog<<EOF' >> $GITHUB_OUTPUT
-          cat _release_changelog.txt >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          if [ -n "${{ github.event.inputs.changelog }}" ]; then
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ github.event.inputs.changelog }}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            version="${{ steps.get_version.outputs.pluginVersion }}"
+            awk -v ver="$version" '
+              BEGIN {found=0}
+              /^## \[/ {
+                if (found) exit
+                if ($2 == "["ver"]") found=1
+              }
+              found && !/^## \[/ {print}
+            ' CHANGELOG.md | sed '/^$/d' > _release_changelog.txt
+            echo 'changelog<<EOF' >> $GITHUB_OUTPUT
+            cat _release_changelog.txt >> $GITHUB_OUTPUT
+            echo 'EOF' >> $GITHUB_OUTPUT
+          fi
 
       - name: Create GitHub Release
         if: steps.check_tag.outputs.exists == 'false'
