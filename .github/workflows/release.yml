@@ -121,7 +121,8 @@ jobs:
             
             ${{ steps.changelog.outputs.changelog }}
           files: |
-            ./build/distributions/*
+            LICENSE
+            ./build/distributions/intellij-profiler-plugin.zip
             ./build/libs/Java\ JFR Profiler-all.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
