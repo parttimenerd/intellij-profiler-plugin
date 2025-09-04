@@ -46,8 +46,26 @@ jobs:
           git tag v${{ steps.get_version.outputs.pluginVersion }}
           git push origin v${{ steps.get_version.outputs.pluginVersion }}
 
-      - name: Build the project
-        run: ./gradlew build
+      # Build the plugin and prepare the artifact for the next steps
+      - name: Build Plugin
+        run: ./gradlew buildPlugin
+
+      # Prepare plugin archive content for creating artifact
+      - name: Prepare Plugin Artifact
+        id: artifact
+        shell: bash
+        run: |
+          cd ${{ github.workspace }}/build/distributions
+          FILENAME=`ls *.zip`
+          unzip "$FILENAME" -d content
+
+          echo "filename=${FILENAME:0:-4}" >> $GITHUB_OUTPUT
+      # Store already-built plugin as an artifact for downloading
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact.outputs.filename }}
+          path: ./build/distributions/*
 
       - name: Extract changelog for this version
         id: changelog
@@ -73,6 +91,6 @@ jobs:
           name: Release v${{ steps.get_version.outputs.pluginVersion }}
           body: ${{ steps.changelog.outputs.changelog }}
           files: |
-            build/libs/*.jar
+            ./build/distributions/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
