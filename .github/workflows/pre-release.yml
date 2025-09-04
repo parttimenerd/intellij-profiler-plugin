@@ -1,16 +1,51 @@
-name: "pre-release"
+name: Pre-Release (only if version did not change)
 
 on:
   push:
+    paths:
+      - 'gradle.properties'
     branches:
-      - "main"
+      - main
 
 jobs:
   pre-release:
-    name: "Pre Release"
-    runs-on: "ubuntu-latest"
-
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract pluginVersion from gradle.properties
+        id: get_version
+        run: |
+          version=$(grep '^pluginVersion' gradle.properties | cut -d'=' -f2 | xargs)
+          echo "pluginVersion=$version" >> $GITHUB_OUTPUT
+
+      - name: Fetch latest tag
+        id: get_tag
+        run: |
+          git fetch --tags
+          latest_tag=$(git tag --list 'v*' --sort=-v:refname | head -n1 | sed 's/^v//')
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+
+      - name: Check if version matches latest tag
+        id: check_version
+        run: |
+          if [ "${{ steps.get_version.outputs.pluginVersion }}" = "${{ steps.get_tag.outputs.latest_tag }}" ]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run pre-release steps
+        if: steps.check_version.outputs.match == 'true'
+        run: |
+          echo "Running pre-release steps because version did not change."
+          # Add your pre-release steps here
+
+      - name: Skip pre-release steps
+        if: steps.check_version.outputs.match != 'true'
+        run: |
+          echo "Skipping pre-release steps because version changed."
       - uses: actions/checkout@v1
         with:
           submodules: true
