@@ -72,7 +72,9 @@ jobs:
 
       # Build the plugin and prepare the artifact for the next steps
       - name: Build Plugin
-        run: ./gradlew buildPlugin
+        run: |
+          ./gradlew build
+          ./gradlew buildPlugin
 
       # Prepare plugin archive content for creating artifact
       - name: Prepare Plugin Artifact
@@ -113,8 +115,13 @@ jobs:
         with:
           tag_name: v${{ steps.get_version.outputs.pluginVersion }}
           name: Release v${{ steps.get_version.outputs.pluginVersion }}
-          body: ${{ steps.changelog.outputs.changelog }}
+          body: |
+            Install the plugin from the JetBrains Marketplace or download the JAR file from this release page and
+            use the "Install Plugin from Disk" action in your IDE.
+            
+            ${{ steps.changelog.outputs.changelog }}
           files: |
             ./build/distributions/*
+            ./build/libs/Java\ JFR Profiler-all.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
