@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.0.16]
+
+### Changed
+- Make plugin compatible with all future IntelliJ versions by not specifying an upper bound
+
 ## [0.0.15]
 
 ### Added
