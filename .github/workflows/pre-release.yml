@@ -2,8 +2,6 @@ name: Pre-Release (only if version did not change)
 
 on:
   push:
-    paths:
-      - 'gradle.properties'
     branches:
       - main
 
