@@ -16,6 +16,8 @@ on:
         description: 'Changelog for this release'
         required: false
         type: string
+        ui:
+          textarea: true
 
 jobs:
   release:
@@ -52,13 +54,21 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create tag and push
-        if: steps.check_tag.outputs.exists == 'false'
+      - name: Create or update tag and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag v${{ steps.get_version.outputs.pluginVersion }}
-          git push origin v${{ steps.get_version.outputs.pluginVersion }}
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Always force-create/move the tag to the current commit and force-push
+            git tag -f v${{ steps.get_version.outputs.pluginVersion }}
+            git push origin -f v${{ steps.get_version.outputs.pluginVersion }}
+          else
+            # Only create the tag if it doesn't exist
+            if [ "${{ steps.check_tag.outputs.exists }}" = "false" ]; then
+              git tag v${{ steps.get_version.outputs.pluginVersion }}
+              git push origin v${{ steps.get_version.outputs.pluginVersion }}
+            fi
+          fi
 
       # Build the plugin and prepare the artifact for the next steps
       - name: Build Plugin
@@ -98,7 +108,7 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        if: steps.check_tag.outputs.exists == 'false'
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && steps.check_tag.outputs.exists == 'false')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.get_version.outputs.pluginVersion }}
