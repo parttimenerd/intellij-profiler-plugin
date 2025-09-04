@@ -81,8 +81,8 @@ jobs:
         id: artifact
         shell: bash
         run: |
-          cd ${{ github.workspace }}/build/distributions
-          FILENAME=`ls *.zip`
+          cd ${{ github.workspace }}/build/libs
+          FILENAME="Java JFR Profiler-all.jar"
           unzip "$FILENAME" -d content
 
           echo "filename=${FILENAME:0:-4}" >> $GITHUB_OUTPUT
