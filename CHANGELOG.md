@@ -7,7 +7,7 @@
 ## [0.0.17]
 
 ### Changed
-- Make plugin really compatible with many future IntelliJ versions by specifying 300 as upper bound
+- Make plugin really compatible with all future IntelliJ versions
 
 ## [0.0.16]
 

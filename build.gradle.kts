@@ -133,6 +133,26 @@ tasks {
 
 tasks.findByName("build")?.dependsOn(tasks.findByName("copyHooks"))
 
+// Custom task to remove the 'until-build' attribute from the patched plugin.xml
+// this allows the plugin to be compatible with future IDE versions
+// Yes this is kind of hackish, but it's the easiest way to achieve this without
+// rewriting the whole build process
+tasks.register("removeUntilBuildFromPatchedPluginXml") {
+    doLast {
+        val pluginXml = file("build/patchedPluginXmlFiles/plugin.xml")
+        if (pluginXml.exists()) {
+            val content = pluginXml.readText()
+                .replace(Regex("""(<idea-version[^>]+) until-build="[^"]*"""")) { matchResult ->
+                    matchResult.groupValues[1]
+                }
+            pluginXml.writeText(content)
+        }
+    }
+}
+// Run this task after patchPluginXml
+tasks.named("patchPluginXml") {
+    finalizedBy("removeUntilBuildFromPatchedPluginXml")
+}
 tasks {
     // Set the JVM compatibility versions
     properties("javaVersion").let {
@@ -152,7 +172,6 @@ tasks {
     patchPluginXml {
         version.set(properties("pluginVersion"))
         sinceBuild.set(properties("pluginSinceBuild"))
-        untilBuild.set("300.*")
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription.set(
