@@ -4,7 +4,29 @@
 
 ## [Unreleased]
 
+### Added
+- Attach to running JVMs from a new "JFR Recording" tool window (#36)
+  - Lists all local JVMs with PID and name
+  - Start JFR or async-profiler recordings per process without restarting
+  - Stop and immediately open the resulting profile
+  - Open previous recordings with Firefox Profiler or Jeffrey
+- Jeffrey profiler viewer integration (#32)
+  - Bundle Jeffrey microscope.jar; auto-launch on a free port
+  - "Open with Jeffrey" context menu action on JFR files in the project tree
+  - Viewer dropdown in the JFR file editor (Firefox Profiler / Jeffrey)
+- Named JFR output files for attach recordings: `profile-<pid>-<name>.jfr`
+
+### Fixed
+- Profiling JUnit and TestNG test run configurations now works (#29)
+- "Could not download profile" after attach recording: use
+  `setPredefinedConfiguration("profile")` instead of broken manual settings map
+- Cache poisoning when JFR → JSON conversion fails mid-write (jfrtofp)
+
 ### Changed
+- Upgrade IntelliJ platform target 2022.1 → 2025.1 (JBR 21)
+- Migrate build from org.jetbrains.intellij 1.x to org.jetbrains.intellij.platform 2.6.0
+- Upgrade Kotlin 1.9 → 2.1, Java toolchain 11 → 21
+- Update ap-loader to 4.4-13 (async-profiler with built-in jattach)
 - Update jfrtofp to 0.0.5-SNAPSHOT and jfrtofp-server to 0.0.3-SNAPSHOT
 
 ## [0.0.17]
