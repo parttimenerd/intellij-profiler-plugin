@@ -19,6 +19,12 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
+        <toolWindow id="JFR Recording"
+                    anchor="bottom"
+                    factoryClass="me.bechberger.jfrplugin.attach.ui.RecordingToolWindowFactory"/>
+
+        <projectService serviceImplementation="me.bechberger.jfrplugin.attach.AttachService"/>
+
         <fileType name="JDK Flight Recorder"
                   extensions="jfr"
                   language="JDK Flight Recorder"

@@ -110,7 +110,7 @@ dependencies {
     implementation("me.bechberger:jfrtofp:0.0.5-SNAPSHOT") {
         isChanging = true
     }
-    implementation("me.bechberger:ap-loader-all:4.1-10")
+    implementation("me.bechberger:ap-loader-all:4.4-13")
 }
 
 tasks.test {
