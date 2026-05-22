@@ -1,5 +1,6 @@
 package me.bechberger.jfrplugin.actions
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -9,6 +10,8 @@ import me.bechberger.jfrplugin.lang.JFRFileType
 import me.bechberger.jfrplugin.viewer.JeffreyLauncher
 
 class OpenWithJeffreyAction : AnAction("Open with Jeffrey") {
+
+    override fun getActionUpdateThread() = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)

@@ -29,8 +29,7 @@ import javax.swing.table.TableCellRenderer
 class RecordingToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val panel = RecordingPanel(project)
-        @Suppress("DEPRECATION")
-        val content = ContentFactory.SERVICE.getInstance().createContent(panel, "", false)
+        val content = ContentFactory.getInstance().createContent(panel, "", false)
         toolWindow.contentManager.addContent(content)
     }
 }

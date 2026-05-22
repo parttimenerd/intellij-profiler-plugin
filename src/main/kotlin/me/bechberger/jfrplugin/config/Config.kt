@@ -114,7 +114,7 @@ data class ProfilerConfig(
         fun get(project: Project): ProfilerConfig {
             val configFile = fileNameToPath(project, PROFILE_CONFIG_FILE)
             return if (Files.exists(configFile)) {
-                configFile.inputStream().use {
+                Files.newInputStream(configFile).use {
                     jsonFormat.decodeFromStream<ProfilerConfig>(it)
                 }.also { config ->
                     if (Files.readString(configFile) != jsonFormat.encodeToString(config)) {

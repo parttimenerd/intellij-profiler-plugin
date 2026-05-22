@@ -127,7 +127,7 @@ object PsiUtils {
         return JavaPsiFacade.getInstance(project).findClass(
             "$pkg.${normalizeClassName(className)}",
             GlobalSearchScope.allScope(project)
-        ).alsoIfNull { logger.info("Qualified name $pkg.$className not valid") }
+        ).also { if (it == null) logger.info("Qualified name $pkg.$className not valid") }
     }
 
     private fun PsiClass.findFile() = navigationElement.containingFile
