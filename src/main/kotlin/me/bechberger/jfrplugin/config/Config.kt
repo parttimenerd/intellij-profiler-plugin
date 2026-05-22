@@ -66,11 +66,15 @@ data class RunTargetConf(val targetPrefix: String, val optionForVmArgs: String, 
 
 
 @Serializable
+enum class ViewerType { FIREFOX_PROFILER, JEFFREY }
+
+@Serializable
 data class ProfilerConfig(
     val jfrConfig: JFRConfig = JFRConfig(),
     val asyncProfilerConfig: AsyncProfilerConfig = AsyncProfilerConfig(),
     val file: String = "\$PROJECT_DIR/profile.jfr",
     val conversionConfig: ConversionConfig = ConversionConfig(),
+    val defaultViewer: ViewerType = ViewerType.FIREFOX_PROFILER,
     val additionalGradleTargets: List<RunTargetConf> = listOf(
         RunTargetConf(
             "quarkus",

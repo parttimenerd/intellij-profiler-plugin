@@ -14,26 +14,32 @@ import java.nio.file.Path;
 import java.util.logging.Logger;
 
 /**
- * Window that loads an HTMl5 based view
- * <p>
- * This has to be implemented in Java, else IntelliJ will not work properly
+ * Window that loads an HTML5-based view.
+ *
+ * Must be implemented in Java — IntelliJ JCEF integration does not work correctly from Kotlin.
  */
 public class WebViewWindow implements Disposable {
 
     private static final Logger logger = Logger.getLogger("Java JFR Profiler WebViewWindow");
 
     private final JBCefBrowser browser;
-    private final String url;
+    private final String firefoxProfilerUrl;
 
     public WebViewWindow(Project project, Config config, Path file) {
-        this.url = Server.startIfNeededAndGetUrl(file, config,
+        this(project, config, file, null);
+    }
+
+    public WebViewWindow(Project project, Config config, Path file, String overrideUrl) {
+        this.firefoxProfilerUrl = Server.startIfNeededAndGetUrl(file, config,
                 (classLocation) -> PsiUtils.INSTANCE.getFileContent(project,
                 classLocation.klass, classLocation.pkg), (dest) -> PsiUtils.INSTANCE.navigateToClass(project,
                 dest.klass, dest.pkg, dest.line, dest.method));
-        logger.info("URL: " + url);
-        browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).setUrl(url).build();
+
+        String initialUrl = overrideUrl != null ? overrideUrl : firefoxProfilerUrl;
+        logger.info("URL: " + initialUrl);
+        browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).setUrl(initialUrl).build();
         Disposer.register(project, browser);
-        // launching a browser properly is hard...
+        // Retry until the browser actually loads the URL (CEF can drop the first load attempt)
         new Thread(() -> {
             while (true) {
                 try {
@@ -44,13 +50,9 @@ public class WebViewWindow implements Disposable {
                 if (browser.getCefBrowser().getURL().startsWith("http://localhost:")) {
                     break;
                 }
-                browser.getCefBrowser().loadURL(url);
+                browser.getCefBrowser().loadURL(initialUrl);
             }
         }).start();
-    }
-
-    private String getURL() {
-        return url;
     }
 
     public JComponent getComponent() {
@@ -59,6 +61,14 @@ public class WebViewWindow implements Disposable {
 
     public void reload() {
         browser.getCefBrowser().reload();
+    }
+
+    public void loadUrl(String url) {
+        browser.getCefBrowser().loadURL(url);
+    }
+
+    public void reloadWithFirefoxProfiler() {
+        browser.getCefBrowser().loadURL(firefoxProfilerUrl);
     }
 
     @Override

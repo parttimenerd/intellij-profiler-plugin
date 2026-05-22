@@ -2,6 +2,11 @@ import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import kotlin.math.sign
+import java.net.URL
+
+val jeffreyVersion = "0.9.2"
+val jeffreyJarUrl = "https://github.com/petrbouda/jeffrey/releases/download/v$jeffreyVersion/microscope.jar"
+val jeffreyJarDest = layout.projectDirectory.file("src/main/resources/jeffrey/microscope.jar")
 
 group = "me.bechberger"
 description = "A profiler plugin for Java based on JFR and Firefox Profiler"
@@ -129,6 +134,19 @@ tasks.withType<KotlinCompile> {
 tasks.register<Copy>("copyHooks") {
     from("bin/pre-commit")
     into(".git/hooks")
+}
+
+tasks.register("downloadJeffrey") {
+    description = "Downloads the Jeffrey microscope.jar viewer (v$jeffreyVersion) into src/main/resources/jeffrey/"
+    onlyIf { !jeffreyJarDest.asFile.exists() }
+    doLast {
+        val dest = jeffreyJarDest.asFile
+        dest.parentFile.mkdirs()
+        logger.lifecycle("Downloading Jeffrey $jeffreyVersion → ${dest.absolutePath}")
+        URL(jeffreyJarUrl).openStream().use { input ->
+            dest.outputStream().use { output -> input.copyTo(output) }
+        }
+    }
 }
 
 tasks {
