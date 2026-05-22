@@ -21,6 +21,7 @@
 
         <toolWindow id="JFR Recording"
                     anchor="bottom"
+                    icon="/icons/jfrRecording.svg"
                     factoryClass="me.bechberger.jfrplugin.attach.ui.RecordingToolWindowFactory"/>
 
         <projectService serviceImplementation="me.bechberger.jfrplugin.attach.AttachService"/>

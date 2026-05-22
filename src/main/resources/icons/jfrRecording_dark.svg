@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13">
+  <!-- red record dot -->
+  <circle cx="3" cy="6.5" r="2.5" fill="#DB5C5C"/>
+  <!-- waveform bars -->
+  <rect x="7"   y="4"   width="1.5" height="5" rx="0.5" fill="#8FB95E"/>
+  <rect x="9.5" y="2.5" width="1.5" height="8" rx="0.5" fill="#8FB95E"/>
+  <rect x="12"  y="4.5" width="1.5" height="4" rx="0.5" fill="#8FB95E"/>
+</svg>
