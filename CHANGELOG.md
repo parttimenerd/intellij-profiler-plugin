@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Changed
+- Update jfrtofp to 0.0.5-SNAPSHOT and jfrtofp-server to 0.0.3-SNAPSHOT
+
 ## [0.0.17]
 
 ### Changed
