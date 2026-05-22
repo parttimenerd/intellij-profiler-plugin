@@ -46,7 +46,7 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.16.1"
+    id("org.jetbrains.intellij") version "1.17.4"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "2.2.0"
     // Gradle Qodana Plugin
