@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project
 import me.bechberger.jfrplugin.config.additionalGradleTargets
 import me.bechberger.jfrplugin.config.additionalMavenTargets
 import org.jdom.Element
+import java.nio.file.Files
 
 
 /**
@@ -63,7 +64,8 @@ abstract class BasePluginRunConfigurationExtension(private val name: String, pri
         executor: Executor,
     ) {
         if (executor.id == executorId) {
-            val paramString = computeVmParameters(configuration.project).joinToString(" ") { "\"$it\"" }
+            val vmArgs = computeVmParameters(configuration.project)
+            val paramString = vmArgs.joinToString(" ") { "\"$it\"" }
             val paramList = params.programParametersList
             when (configuration.getType().displayName) {
                 "Maven" -> {
@@ -92,27 +94,45 @@ abstract class BasePluginRunConfigurationExtension(private val name: String, pri
                     }
                     matchingConfs.forEach { (_, value) -> paramList.add("$value=$paramString") }
                     if (matchingConfs.isEmpty()) {
-                        params.env.getOrDefault("GRADLE_OPTS", "").let {
-                            params.env["GRADLE_OPTS"] = "$it $paramString"
-                        }
+                        // Inject via a temp init script so the args reach forked test JVMs,
+                        // not just the Gradle daemon (GRADLE_OPTS only reaches the daemon).
+                        val initScript = writeGradleInitScript(vmArgs)
+                        paramList.add("--init-script")
+                        paramList.add(initScript)
                     }
                 }
 
                 else -> {
-                    params.vmParametersList.addAll(computeVmParameters(configuration.project))
+                    params.vmParametersList.addAll(vmArgs)
                 }
             }
         }
     }
 
+    /** Writes a Gradle init script that injects [vmArgs] into every Test task's jvmArgs.
+     *  Returns the absolute path of the written file. */
+    private fun writeGradleInitScript(vmArgs: List<String>): String {
+        val escapedArgs = vmArgs.joinToString(", ") { arg ->
+            // Escape backslashes and single quotes for a Groovy string literal
+            "'" + arg.replace("\\", "\\\\").replace("'", "\\'") + "'"
+        }
+        val script = """
+            allprojects {
+                tasks.withType(Test).configureEach {
+                    jvmArgs($escapedArgs)
+                }
+            }
+        """.trimIndent()
+        val tmpFile = Files.createTempFile("jfr-profiling-", ".gradle")
+        tmpFile.toFile().deleteOnExit()
+        Files.writeString(tmpFile, script)
+        return tmpFile.toAbsolutePath().toString()
+    }
+
     override fun isApplicableFor(configuration: RunConfigurationBase<*>): Boolean {
         return configuration.getType().displayName == "Maven" ||
-                (configuration.getType().displayName == "Gradle" &&
-                        (configuration as ExternalSystemRunConfiguration).settings.taskNames.any { task ->
-            gradleConfs(
-                configuration.project
-            ).keys.any { task.startsWith(it) }
-        }) || listOf("Java", "Kotlin", "Application", "JAR Application")
+                configuration.getType().displayName == "Gradle" ||
+                listOf("Java", "Kotlin", "Application", "JAR Application", "JUnit", "TestNG")
             .any { configuration.type.displayName.startsWith(it) }
     }
 
