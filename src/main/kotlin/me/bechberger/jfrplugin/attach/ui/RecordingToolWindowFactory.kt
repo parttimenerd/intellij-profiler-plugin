@@ -42,7 +42,7 @@ private class RecordingPanel(private val project: Project) : JPanel(BorderLayout
     private val ticker = Timer(1000) { tableModel.tick() }
 
     init {
-        table.rowHeight = 36
+        table.rowHeight = 28
         table.preferredScrollableViewportSize = Dimension(700, 250)
 
         val actionsCol = table.columnModel.getColumn(COL_ACTIONS)
@@ -188,32 +188,30 @@ private class ActionsCellRenderer(
     private fun buildPanel(pid: String, state: RecordingState, jfrExists: Boolean): JPanel {
         val panel = JPanel().apply { isOpaque = true }
         if (state is RecordingState.Idle) {
-            panel.add(JButton("JFR").also { btn ->
-                btn.addActionListener { doStart(pid, Engine.JFR) }
-            })
-            panel.add(JButton("async-profiler").also { btn ->
-                btn.addActionListener { doStart(pid, Engine.ASYNC_PROFILER) }
-            })
+            panel.add(btn("JFR") { doStart(pid, Engine.JFR) })
+            panel.add(btn("async-profiler") { doStart(pid, Engine.ASYNC_PROFILER) })
             if (jfrExists) {
-                panel.add(JButton("Stop & Open").also { btn ->
-                    btn.isEnabled = false
-                    btn.toolTipText = "No recording in progress"
-                })
-                panel.add(JButton("Open").also { btn ->
-                    btn.addActionListener { doOpen(pid) }
-                })
-                panel.add(JButton("Open with Jeffrey").also { btn ->
-                    btn.addActionListener { doOpenJeffrey(pid) }
-                })
+                panel.add(btn("Open") { doOpen(pid) })
+                panel.add(btn("Open with Jeffrey") { doOpenJeffrey(pid) })
             }
         } else {
-            panel.add(JButton("JFR").also { btn -> btn.isEnabled = false })
-            panel.add(JButton("async-profiler").also { btn -> btn.isEnabled = false })
-            panel.add(JButton("Stop & Open").also { btn ->
-                btn.addActionListener { doStop(pid) }
-            })
+            panel.add(btn("JFR", enabled = false))
+            panel.add(btn("async-profiler", enabled = false))
+            panel.add(btn("Stop") { doStop(pid) })
+            panel.add(btn("Open") { doOpen(pid) })
+            panel.add(btn("Open with Jeffrey") { doOpenJeffrey(pid) })
         }
         return panel
+    }
+
+    private fun btn(label: String, enabled: Boolean = true, action: (() -> Unit)? = null): JButton {
+        return JButton(label).apply {
+            isEnabled = enabled
+            val insets = java.awt.Insets(1, 6, 1, 6)
+            margin = insets
+            isFocusPainted = false
+            if (action != null) addActionListener { action() }
+        }
     }
 
     private fun doStart(pid: String, engine: Engine) {
@@ -237,10 +235,7 @@ private class ActionsCellRenderer(
                 val stopped = service.stop(pid)
                 val file = outputFile ?: stopped
                 LocalFileSystem.getInstance().refreshNioFiles(listOf(file), false, false, null)
-                SwingUtilities.invokeLater {
-                    model.setState(pid, RecordingState.Idle)
-                    JFRProgramRunner.loadFile(project, file)
-                }
+                SwingUtilities.invokeLater { model.setState(pid, RecordingState.Idle) }
             } catch (e: Exception) {
                 SwingUtilities.invokeLater {
                     JOptionPane.showMessageDialog(tableRef(), "Failed to stop recording:\n${e.message}", "Error", JOptionPane.ERROR_MESSAGE)
