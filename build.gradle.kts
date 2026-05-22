@@ -159,7 +159,10 @@ tasks.register<Copy>("copyHooks") {
 
 tasks.register("downloadJeffrey") {
     description = "Downloads the Jeffrey microscope.jar viewer (v$jeffreyVersion) into src/main/resources/jeffrey/"
-    onlyIf { !jeffreyJarDest.asFile.exists() }
+    onlyIf {
+        val dest = jeffreyJarDest.asFile
+        !dest.exists() || (System.currentTimeMillis() - dest.lastModified() > 86_400_000L)
+    }
     doLast {
         val dest = jeffreyJarDest.asFile
         dest.parentFile.mkdirs()
@@ -168,6 +171,10 @@ tasks.register("downloadJeffrey") {
             dest.outputStream().use { output -> input.copyTo(output) }
         }
     }
+}
+
+tasks.named("processResources") {
+    dependsOn("downloadJeffrey")
 }
 
 tasks {
