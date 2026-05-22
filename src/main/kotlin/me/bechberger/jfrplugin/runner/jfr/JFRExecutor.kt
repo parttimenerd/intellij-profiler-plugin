@@ -39,6 +39,10 @@ class JFRExecutor : Executor() {
         return "Profile with JFR"
     }
 
+    override fun getStartActionText(configurationName: String): String {
+        return "Profile '$configurationName' with JFR"
+    }
+
     override fun getContextActionId(): String {
         return this.id + " context-action-does-not-exist"
     }

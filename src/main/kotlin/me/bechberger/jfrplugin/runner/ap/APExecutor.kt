@@ -41,6 +41,10 @@ class APExecutor : Executor() {
         return "Profile with async-profiler"
     }
 
+    override fun getStartActionText(configurationName: String): String {
+        return "Profile '$configurationName' with async-profiler"
+    }
+
     override fun getContextActionId(): String {
         return this.id + " context-action-does-not-exist"
     }
