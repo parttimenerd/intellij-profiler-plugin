@@ -1,6 +1,8 @@
 package me.bechberger.jfrplugin.attach.ui
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
@@ -12,9 +14,14 @@ import me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.time.Duration
+import java.time.Instant
 import javax.swing.*
 import javax.swing.table.AbstractTableModel
-import javax.swing.table.DefaultTableCellRenderer
+import javax.swing.table.TableCellEditor
+import javax.swing.table.TableCellRenderer
 
 class RecordingToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -30,121 +37,190 @@ private class RecordingPanel(private val project: Project) : JPanel(BorderLayout
     private val tableModel = JvmTableModel()
     private val table = JTable(tableModel)
 
-    private val refreshButton = JButton("Refresh")
-    private val engineCombo = JComboBox(arrayOf(Engine.JFR, Engine.ASYNC_PROFILER)).apply {
-        renderer = object : DefaultListCellRenderer() {
-            override fun getListCellRendererComponent(
-                list: JList<*>?, value: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean
-            ): Component {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-                text = if (value == Engine.JFR) "JFR" else "async-profiler"
-                return this
-            }
-        }
-    }
-    private val startButton = JButton("Start").apply { isEnabled = false }
-    private val stopButton = JButton("Stop & Open").apply { isEnabled = false }
+    private val ticker = Timer(1000) { tableModel.tick() }
 
     init {
-        table.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
-        table.selectionModel.addListSelectionListener { updateButtons() }
-        table.rowHeight = 22
-        table.preferredScrollableViewportSize = Dimension(400, 200)
+        table.rowHeight = 28
+        table.preferredScrollableViewportSize = Dimension(600, 250)
+
+        // Actions column: use a custom renderer+editor with inline buttons
+        val actionsCol = table.columnModel.getColumn(COL_ACTIONS)
+        actionsCol.preferredWidth = 260
+        actionsCol.cellRenderer = ActionsCellRenderer()
+        actionsCol.cellEditor = ActionsCellEditor(project, service, tableModel, ticker) { table }
+
+        // Clicking anywhere in the row triggers editing (so buttons are live)
+        table.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                val row = table.rowAtPoint(e.point)
+                val col = table.columnAtPoint(e.point)
+                if (row >= 0 && col == COL_ACTIONS) {
+                    table.editCellAt(row, COL_ACTIONS)
+                }
+            }
+        })
 
         val toolbar = JPanel().apply {
-            add(refreshButton)
-            add(JLabel("Engine:"))
-            add(engineCombo)
-            add(startButton)
-            add(stopButton)
+            add(JButton("Refresh").also { btn ->
+                btn.addActionListener { refresh() }
+            })
         }
         add(toolbar, BorderLayout.NORTH)
         add(JScrollPane(table), BorderLayout.CENTER)
 
-        refreshButton.addActionListener { refresh() }
-        startButton.addActionListener { startRecording() }
-        stopButton.addActionListener { stopRecording() }
-
+        ticker.start()
         refresh()
     }
 
-    private fun refresh() {
+    fun refresh() {
         val jvms = service.listJvms()
         tableModel.update(jvms, service)
-        updateButtons()
     }
 
-    private fun updateButtons() {
-        val row = table.selectedRow
-        if (row < 0 || row >= tableModel.jvms.size) {
-            startButton.isEnabled = false
-            stopButton.isEnabled = false
-            return
+    companion object {
+        const val COL_ACTIONS = 3
+    }
+}
+
+// ── Table model ──────────────────────────────────────────────────────────────
+
+private class JvmTableModel : AbstractTableModel() {
+    var jvms: List<JvmInfo> = emptyList()
+        private set
+    var states: MutableMap<String, RecordingState> = mutableMapOf()
+        private set
+
+    private val columns = arrayOf("PID", "Name", "State", "Profile with")
+
+    fun update(newJvms: List<JvmInfo>, service: AttachService) {
+        jvms = newJvms
+        states = newJvms.associate { it.pid to service.state(it.pid) }.toMutableMap()
+        fireTableDataChanged()
+    }
+
+    fun setState(pid: String, state: RecordingState) {
+        states[pid] = state
+        val row = jvms.indexOfFirst { it.pid == pid }
+        if (row >= 0) fireTableRowsUpdated(row, row)
+    }
+
+    fun tick() {
+        jvms.forEachIndexed { i, jvm ->
+            if (states[jvm.pid] is RecordingState.Recording) fireTableRowsUpdated(i, i)
         }
-        val pid = tableModel.jvms[row].pid
-        val state = service.state(pid)
-        startButton.isEnabled = state is RecordingState.Idle
-        stopButton.isEnabled = state is RecordingState.Recording
     }
 
-    private fun startRecording() {
-        val row = table.selectedRow.takeIf { it >= 0 } ?: return
-        val pid = tableModel.jvms[row].pid
-        val engine = engineCombo.selectedItem as Engine
-        SwingUtilities.invokeLater {
+    override fun getRowCount() = jvms.size
+    override fun getColumnCount() = columns.size
+    override fun getColumnName(col: Int) = columns[col]
+    override fun isCellEditable(row: Int, col: Int) = col == RecordingPanel.COL_ACTIONS
+
+    override fun getValueAt(row: Int, col: Int): Any {
+        val jvm = jvms[row]
+        return when (col) {
+            0 -> jvm.pid
+            1 -> jvm.displayName
+            2 -> when (val s = states[jvm.pid] ?: RecordingState.Idle) {
+                is RecordingState.Idle -> "Idle"
+                is RecordingState.Recording -> "● ${if (s.engine == Engine.JFR) "JFR" else "ap"} ${formatElapsed(s.startTime)}"
+            }
+            3 -> states[jvm.pid] ?: RecordingState.Idle
+            else -> ""
+        }
+    }
+}
+
+// ── Actions cell ─────────────────────────────────────────────────────────────
+
+private fun actionsPanel(
+    state: RecordingState,
+    onStart: (Engine) -> Unit,
+    onStop: () -> Unit,
+): JPanel {
+    return JPanel().apply {
+        isOpaque = true
+        if (state is RecordingState.Idle) {
+            add(JButton("JFR").also { it.addActionListener { onStart(Engine.JFR) } })
+            add(JButton("async-profiler").also { it.addActionListener { onStart(Engine.ASYNC_PROFILER) } })
+        } else {
+            add(JButton("Stop & Open").also { it.addActionListener { onStop() } })
+        }
+    }
+}
+
+private class ActionsCellRenderer : TableCellRenderer {
+    override fun getTableCellRendererComponent(
+        table: JTable, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+    ): Component {
+        val state = value as? RecordingState ?: RecordingState.Idle
+        return actionsPanel(state, {}, {})
+    }
+}
+
+private class ActionsCellEditor(
+    private val project: Project,
+    private val service: AttachService,
+    private val model: JvmTableModel,
+    private val ticker: Timer,
+    private val tableRef: () -> JTable,
+) : AbstractCellEditor(), TableCellEditor {
+
+    private var currentPanel: JPanel? = null
+    private var currentPid: String = ""
+
+    override fun getCellEditorValue(): Any = model.states[currentPid] ?: RecordingState.Idle
+
+    override fun getTableCellEditorComponent(
+        table: JTable, value: Any?, isSelected: Boolean, row: Int, column: Int
+    ): Component {
+        currentPid = model.jvms.getOrNull(row)?.pid ?: return JPanel()
+        val state = value as? RecordingState ?: RecordingState.Idle
+        val panel = actionsPanel(
+            state,
+            onStart = { engine -> doStart(currentPid, engine, row) },
+            onStop = { doStop(currentPid, row) }
+        )
+        currentPanel = panel
+        return panel
+    }
+
+    private fun doStart(pid: String, engine: Engine, @Suppress("UNUSED_PARAMETER") row: Int) {
+        stopCellEditing()
+        ApplicationManager.getApplication().executeOnPooledThread {
             try {
                 service.start(pid, engine)
-                tableModel.fireTableRowsUpdated(row, row)
-                updateButtons()
+                SwingUtilities.invokeLater { model.setState(pid, service.state(pid)) }
             } catch (e: Exception) {
-                JOptionPane.showMessageDialog(this, "Failed to start recording:\n${e.message}", "Error", JOptionPane.ERROR_MESSAGE)
+                SwingUtilities.invokeLater {
+                    JOptionPane.showMessageDialog(tableRef(), "Failed to start recording:\n${e.message}", "Error", JOptionPane.ERROR_MESSAGE)
+                }
             }
         }
     }
 
-    private fun stopRecording() {
-        val row = table.selectedRow.takeIf { it >= 0 } ?: return
-        val pid = tableModel.jvms[row].pid
-        SwingUtilities.invokeLater {
+    private fun doStop(pid: String, @Suppress("UNUSED_PARAMETER") row: Int) {
+        stopCellEditing()
+        SwingUtilities.invokeLater { model.setState(pid, RecordingState.Idle) }
+        ApplicationManager.getApplication().executeOnPooledThread {
             try {
-                service.stop(pid)
-                tableModel.fireTableRowsUpdated(row, row)
-                updateButtons()
-                JFRProgramRunner.loadFile(project)
+                val outputFile = service.stop(pid)
+                LocalFileSystem.getInstance().refreshNioFiles(listOf(outputFile), false, false, null)
+                SwingUtilities.invokeLater {
+                    model.setState(pid, RecordingState.Idle)
+                    JFRProgramRunner.loadFile(project)
+                }
             } catch (e: Exception) {
-                JOptionPane.showMessageDialog(this, "Failed to stop recording:\n${e.message}", "Error", JOptionPane.ERROR_MESSAGE)
+                SwingUtilities.invokeLater {
+                    JOptionPane.showMessageDialog(tableRef(), "Failed to stop recording:\n${e.message}", "Error", JOptionPane.ERROR_MESSAGE)
+                }
             }
         }
     }
 }
 
-private class JvmTableModel : AbstractTableModel() {
-    var jvms: List<JvmInfo> = emptyList()
-        private set
-    private var states: Map<String, RecordingState> = emptyMap()
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-    private val columns = arrayOf("PID", "Name", "State")
-
-    fun update(newJvms: List<JvmInfo>, service: AttachService) {
-        jvms = newJvms
-        states = newJvms.associate { it.pid to service.state(it.pid) }
-        fireTableDataChanged()
-    }
-
-    override fun getRowCount() = jvms.size
-    override fun getColumnCount() = columns.size
-    override fun getColumnName(column: Int) = columns[column]
-
-    override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
-        val jvm = jvms[rowIndex]
-        return when (columnIndex) {
-            0 -> jvm.pid
-            1 -> jvm.displayName
-            2 -> when (val s = states[jvm.pid] ?: RecordingState.Idle) {
-                is RecordingState.Idle -> "Idle"
-                is RecordingState.Recording -> "Recording (${if (s.engine == Engine.JFR) "JFR" else "ap"})"
-            }
-            else -> ""
-        }
-    }
+private fun formatElapsed(start: Instant): String {
+    val secs = Duration.between(start, Instant.now()).seconds
+    return "%d:%02d".format(secs / 60, secs % 60)
 }

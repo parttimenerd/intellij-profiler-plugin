@@ -7,6 +7,7 @@ import com.sun.tools.attach.VirtualMachine
 import com.sun.tools.attach.VirtualMachineDescriptor
 import me.bechberger.jfrplugin.config.profilerConfig
 import java.nio.file.Path
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 
@@ -19,7 +20,7 @@ data class JvmInfo(
 
 sealed class RecordingState {
     object Idle : RecordingState()
-    data class Recording(val engine: Engine, val outputFile: Path) : RecordingState()
+    data class Recording(val engine: Engine, val outputFile: Path, val startTime: Instant = Instant.now()) : RecordingState()
 }
 
 @Service(Service.Level.PROJECT)
