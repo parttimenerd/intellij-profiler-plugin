@@ -69,8 +69,6 @@ You can also download the latest version from
 [here](https://github.com/parttimenerd/intellij-profiler-plugin/releases/download/latest/Java.JFR.Profiler-all.jar)
 and install it manually via **Settings → Plugins → Install Plugin from Disk**.
 
-To enable the Jeffrey viewer, run `./gradlew downloadJeffrey` once after cloning.
-
 ## Architecture
 
 The plugin is a thin wrapper around [jfrtofp-server](https://github.com/parttimenerd/jfrtofp-server),
@@ -80,6 +78,7 @@ with Java-specific features not yet upstream.
 
 Async-profiler support uses [ap-loader](https://github.com/jvm-profiling-tools/ap-loader).
 JVM attach uses the standard `com.sun.tools.attach` API and `jdk.management.jfr.FlightRecorderMXBean`.
+[Jeffrey](https://github.com/petrbouda/jeffrey) is bundled as an alternative viewer and launched automatically.
 
 ## Goals
 - run JFR or async-profiler on all Java run configurations with a single click

@@ -10,8 +10,8 @@
   - Start JFR or async-profiler recordings per process without restarting
   - Stop and immediately open the resulting profile
   - Open previous recordings with Firefox Profiler or Jeffrey
-- Jeffrey profiler viewer integration (#32)
-  - Bundle Jeffrey microscope.jar; auto-launch on a free port
+- [Jeffrey](https://github.com/petrbouda/jeffrey) profiler viewer integration (#32)
+  - Bundle Jeffrey microscope.jar; auto-launch on a free port; re-downloaded automatically when stale
   - "Open with Jeffrey" context menu action on JFR files in the project tree
   - Viewer dropdown in the JFR file editor (Firefox Profiler / Jeffrey)
 - Named JFR output files for attach recordings: `profile-<pid>-<name>.jfr`
