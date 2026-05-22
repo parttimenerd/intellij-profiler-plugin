@@ -43,7 +43,10 @@ class AttachService(private val project: Project) {
 
     fun start(pid: String, engine: Engine) {
         check(state(pid) is RecordingState.Idle) { "Already recording on pid $pid" }
-        val outputFile = project.profilerConfig.getJFRFile(project)
+        val base = project.profilerConfig.getJFRFile(project)
+        val jvmName = listJvms().find { it.pid == pid }?.displayName ?: pid
+        val safeName = jvmName.replace(Regex("[^A-Za-z0-9._-]"), "_").take(40)
+        val outputFile = base.parent.resolve("profile-$pid-$safeName.jfr")
         when (engine) {
             Engine.JFR -> JfrAttachEngine.start(pid, outputFile, project)
             Engine.ASYNC_PROFILER -> ApAttachEngine.start(pid, outputFile, project)

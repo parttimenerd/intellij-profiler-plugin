@@ -15,10 +15,12 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import me.bechberger.jfrplugin.config.deleteJFRFile
 import me.bechberger.jfrplugin.config.jfrVirtualFile
 import me.bechberger.jfrplugin.editor.JFRFileEditor
 import org.jetbrains.concurrency.Promise
+import java.nio.file.Path
 
 class JFRProgramRunner : DefaultJavaProgramRunner() {
 
@@ -70,17 +72,32 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
         fun loadFile(project: Project, overrideUrl: String? = null) {
             ApplicationManager.getApplication().invokeLater {
                 project.jfrVirtualFile?.let {
-                    FileEditorManagerEx.getInstanceEx(project).windows.forEach { window ->
-                        window.getComposite(it)?.allEditors?.forEach { editor ->
-                            if (editor is JFRFileEditor) {
-                                if (overrideUrl != null) editor.webViewWindow.loadUrl(overrideUrl)
-                                else editor.webViewWindow.reload()
-                            }
-                        }
-                    }
-                    OpenFileDescriptor(project, it).navigate(true)
+                    openVirtualFile(project, it, overrideUrl)
                 }
             }
+        }
+
+        fun loadFile(project: Project, jfrPath: Path, overrideUrl: String? = null) {
+            ApplicationManager.getApplication().invokeLater {
+                val vf = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(jfrPath) ?: return@invokeLater
+                openVirtualFile(project, vf, overrideUrl)
+            }
+        }
+
+        private fun openVirtualFile(
+            project: Project,
+            vf: com.intellij.openapi.vfs.VirtualFile,
+            overrideUrl: String?
+        ) {
+            FileEditorManagerEx.getInstanceEx(project).windows.forEach { window ->
+                window.getComposite(vf)?.allEditors?.forEach { editor ->
+                    if (editor is JFRFileEditor) {
+                        if (overrideUrl != null) editor.webViewWindow.loadUrl(overrideUrl)
+                        else editor.webViewWindow.reload()
+                    }
+                }
+            }
+            OpenFileDescriptor(project, vf).navigate(true)
         }
     }
 }

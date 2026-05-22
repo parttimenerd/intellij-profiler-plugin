@@ -11,11 +11,11 @@ import me.bechberger.jfrplugin.attach.Engine
 import me.bechberger.jfrplugin.attach.JvmInfo
 import me.bechberger.jfrplugin.attach.RecordingState
 import me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner
-import me.bechberger.jfrplugin.config.profilerConfig
 import me.bechberger.jfrplugin.viewer.JeffreyLauncher
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.nio.file.Files
@@ -23,7 +23,6 @@ import java.time.Duration
 import java.time.Instant
 import javax.swing.*
 import javax.swing.table.AbstractTableModel
-import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
 
 class RecordingToolWindowFactory : ToolWindowFactory {
@@ -38,40 +37,57 @@ private class RecordingPanel(private val project: Project) : JPanel(BorderLayout
     private val service = AttachService.getInstance(project)
     private val tableModel = JvmTableModel()
     private val table = JTable(tableModel)
+    private val renderer = ActionsCellRenderer(project, service, tableModel) { table }
 
     private val ticker = Timer(1000) { tableModel.tick() }
 
     init {
-        table.rowHeight = 28
-        table.preferredScrollableViewportSize = Dimension(600, 250)
+        table.rowHeight = 36
+        table.preferredScrollableViewportSize = Dimension(700, 250)
 
-        // Actions column: use a custom renderer+editor with inline buttons
         val actionsCol = table.columnModel.getColumn(COL_ACTIONS)
-        actionsCol.preferredWidth = 260
-        actionsCol.cellRenderer = ActionsCellRenderer()
-        actionsCol.cellEditor = ActionsCellEditor(project, service, tableModel, ticker) { table }
+        actionsCol.preferredWidth = 360
+        actionsCol.cellRenderer = renderer
 
-        // Clicking anywhere in the row triggers editing (so buttons are live)
+        // Never use a cell editor — all interaction goes through the mouse listener
         table.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                val row = table.rowAtPoint(e.point)
+            override fun mousePressed(e: MouseEvent) = handleMouse(e)
+        })
+        table.addMouseMotionListener(object : MouseAdapter() {
+            override fun mouseMoved(e: MouseEvent) {
                 val col = table.columnAtPoint(e.point)
-                if (row >= 0 && col == COL_ACTIONS) {
-                    table.editCellAt(row, COL_ACTIONS)
-                }
+                table.cursor = if (col == COL_ACTIONS)
+                    java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
+                else
+                    java.awt.Cursor.getDefaultCursor()
             }
         })
 
         val toolbar = JPanel().apply {
-            add(JButton("Refresh").also { btn ->
-                btn.addActionListener { refresh() }
-            })
+            add(JButton("Refresh").also { btn -> btn.addActionListener { refresh() } })
         }
         add(toolbar, BorderLayout.NORTH)
         add(JScrollPane(table), BorderLayout.CENTER)
 
         ticker.start()
         refresh()
+    }
+
+    private fun handleMouse(e: MouseEvent) {
+        val row = table.rowAtPoint(e.point)
+        val col = table.columnAtPoint(e.point)
+        if (row < 0 || col != COL_ACTIONS) return
+
+        // Translate the click into the renderer panel's coordinate space
+        val cellRect = table.getCellRect(row, col, false)
+        val panel = renderer.getPanelForRow(row) ?: return
+        val localPoint = Point(e.x - cellRect.x, e.y - cellRect.y)
+        panel.size = cellRect.size
+        panel.doLayout()
+
+        // Find which button was hit
+        val hit = SwingUtilities.getDeepestComponentAt(panel, localPoint.x, localPoint.y)
+        if (hit is JButton) hit.doClick()
     }
 
     fun refresh() {
@@ -91,8 +107,9 @@ private class JvmTableModel : AbstractTableModel() {
         private set
     var states: MutableMap<String, RecordingState> = mutableMapOf()
         private set
+    val lastOutputFile: MutableMap<String, java.nio.file.Path> = mutableMapOf()
 
-    private val columns = arrayOf("PID", "Name", "State", "Profile with")
+    private val columns = arrayOf("PID", "Name", "State", "Actions")
 
     fun update(newJvms: List<JvmInfo>, service: AttachService) {
         jvms = newJvms
@@ -101,6 +118,10 @@ private class JvmTableModel : AbstractTableModel() {
     }
 
     fun setState(pid: String, state: RecordingState) {
+        val prev = states[pid]
+        if (prev is RecordingState.Recording && state is RecordingState.Idle) {
+            lastOutputFile[pid] = prev.outputFile
+        }
         states[pid] = state
         val row = jvms.indexOfFirst { it.pid == pid }
         if (row >= 0) fireTableRowsUpdated(row, row)
@@ -115,7 +136,7 @@ private class JvmTableModel : AbstractTableModel() {
     override fun getRowCount() = jvms.size
     override fun getColumnCount() = columns.size
     override fun getColumnName(col: Int) = columns[col]
-    override fun isCellEditable(row: Int, col: Int) = col == RecordingPanel.COL_ACTIONS
+    override fun isCellEditable(row: Int, col: Int) = false
 
     override fun getValueAt(row: Int, col: Int): Any {
         val jvm = jvms[row]
@@ -132,86 +153,70 @@ private class JvmTableModel : AbstractTableModel() {
     }
 }
 
-// ── Actions cell ─────────────────────────────────────────────────────────────
+// ── Actions cell renderer (no editor) ────────────────────────────────────────
 
-private fun actionsPanel(
-    state: RecordingState,
-    jfrExists: Boolean,
-    onStart: (Engine) -> Unit,
-    onStop: () -> Unit,
-    onOpenJeffrey: () -> Unit,
-): JPanel {
-    return JPanel().apply {
-        isOpaque = true
-        if (state is RecordingState.Idle) {
-            add(JButton("JFR").also { it.addActionListener { onStart(Engine.JFR) } })
-            add(JButton("async-profiler").also { it.addActionListener { onStart(Engine.ASYNC_PROFILER) } })
-            if (jfrExists) {
-                add(JButton("Open with Jeffrey").also { it.addActionListener { onOpenJeffrey() } })
-            }
-        } else {
-            add(JButton("Stop & Open").also { it.addActionListener { onStop() } })
-        }
-    }
-}
-
-private class ActionsCellRenderer : TableCellRenderer {
-    override fun getTableCellRendererComponent(
-        table: JTable, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
-    ): Component {
-        val state = value as? RecordingState ?: RecordingState.Idle
-        return actionsPanel(state, false, {}, {}, {})
-    }
-}
-
-private class ActionsCellEditor(
+private class ActionsCellRenderer(
     private val project: Project,
     private val service: AttachService,
     private val model: JvmTableModel,
-    private val ticker: Timer,
     private val tableRef: () -> JTable,
-) : AbstractCellEditor(), TableCellEditor {
+) : TableCellRenderer {
 
-    private var currentPanel: JPanel? = null
-    private var currentPid: String = ""
+    // One persistent panel per row index — rebuilt when row count changes
+    private val panels = mutableMapOf<Int, JPanel>()
 
-    override fun getCellEditorValue(): Any = model.states[currentPid] ?: RecordingState.Idle
+    fun getPanelForRow(row: Int): JPanel? = panels[row]
 
-    override fun getTableCellEditorComponent(
-        table: JTable, value: Any?, isSelected: Boolean, row: Int, column: Int
+    override fun getTableCellRendererComponent(
+        table: JTable, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
     ): Component {
-        currentPid = model.jvms.getOrNull(row)?.pid ?: return JPanel()
+        val pid = model.jvms.getOrNull(row)?.pid ?: return JPanel()
         val state = value as? RecordingState ?: RecordingState.Idle
-        val jfrExists = Files.exists(project.profilerConfig.getJFRFile(project))
-        val panel = actionsPanel(
-            state,
-            jfrExists,
-            onStart = { engine -> doStart(currentPid, engine, row) },
-            onStop = { doStop(currentPid, row) },
-            onOpenJeffrey = { doOpenJeffrey() }
-        )
-        currentPanel = panel
+        val existingFile = when (state) {
+            is RecordingState.Recording -> state.outputFile
+            is RecordingState.Idle -> model.lastOutputFile[pid]
+        }
+        val jfrExists = existingFile != null && Files.exists(existingFile)
+
+        val panel = buildPanel(pid, state, jfrExists)
+        panels[row] = panel
+        if (isSelected) panel.background = table.selectionBackground
+        else panel.background = table.background
         return panel
     }
 
-    private fun doOpenJeffrey() {
-        stopCellEditing()
-        val jfrFile = project.profilerConfig.getJFRFile(project)
-        ApplicationManager.getApplication().executeOnPooledThread {
-            val url = JeffreyLauncher.startAndGetUrl(jfrFile) ?: run {
-                SwingUtilities.invokeLater {
-                    JOptionPane.showMessageDialog(tableRef(),
-                        "Jeffrey is not available. Run './gradlew downloadJeffrey' to install it.",
-                        "Jeffrey Not Found", JOptionPane.WARNING_MESSAGE)
-                }
-                return@executeOnPooledThread
+    private fun buildPanel(pid: String, state: RecordingState, jfrExists: Boolean): JPanel {
+        val panel = JPanel().apply { isOpaque = true }
+        if (state is RecordingState.Idle) {
+            panel.add(JButton("JFR").also { btn ->
+                btn.addActionListener { doStart(pid, Engine.JFR) }
+            })
+            panel.add(JButton("async-profiler").also { btn ->
+                btn.addActionListener { doStart(pid, Engine.ASYNC_PROFILER) }
+            })
+            if (jfrExists) {
+                panel.add(JButton("Stop & Open").also { btn ->
+                    btn.isEnabled = false
+                    btn.toolTipText = "No recording in progress"
+                })
+                panel.add(JButton("Open").also { btn ->
+                    btn.addActionListener { doOpen(pid) }
+                })
+                panel.add(JButton("Open with Jeffrey").also { btn ->
+                    btn.addActionListener { doOpenJeffrey(pid) }
+                })
             }
-            SwingUtilities.invokeLater { JFRProgramRunner.loadFile(project, url) }
+        } else {
+            panel.add(JButton("JFR").also { btn -> btn.isEnabled = false })
+            panel.add(JButton("async-profiler").also { btn -> btn.isEnabled = false })
+            panel.add(JButton("Stop & Open").also { btn ->
+                btn.addActionListener { doStop(pid) }
+            })
         }
+        return panel
     }
 
-    private fun doStart(pid: String, engine: Engine, @Suppress("UNUSED_PARAMETER") row: Int) {
-        stopCellEditing()
+    private fun doStart(pid: String, engine: Engine) {
         ApplicationManager.getApplication().executeOnPooledThread {
             try {
                 service.start(pid, engine)
@@ -224,22 +229,49 @@ private class ActionsCellEditor(
         }
     }
 
-    private fun doStop(pid: String, @Suppress("UNUSED_PARAMETER") row: Int) {
-        stopCellEditing()
+    private fun doStop(pid: String) {
+        val outputFile = (model.states[pid] as? RecordingState.Recording)?.outputFile
         SwingUtilities.invokeLater { model.setState(pid, RecordingState.Idle) }
         ApplicationManager.getApplication().executeOnPooledThread {
             try {
-                val outputFile = service.stop(pid)
-                LocalFileSystem.getInstance().refreshNioFiles(listOf(outputFile), false, false, null)
+                val stopped = service.stop(pid)
+                val file = outputFile ?: stopped
+                LocalFileSystem.getInstance().refreshNioFiles(listOf(file), false, false, null)
                 SwingUtilities.invokeLater {
                     model.setState(pid, RecordingState.Idle)
-                    JFRProgramRunner.loadFile(project)
+                    JFRProgramRunner.loadFile(project, file)
                 }
             } catch (e: Exception) {
                 SwingUtilities.invokeLater {
                     JOptionPane.showMessageDialog(tableRef(), "Failed to stop recording:\n${e.message}", "Error", JOptionPane.ERROR_MESSAGE)
                 }
             }
+        }
+    }
+
+    private fun doOpen(pid: String) {
+        val outputFile = (model.states[pid] as? RecordingState.Recording)?.outputFile
+            ?: model.lastOutputFile[pid]
+            ?: return
+        ApplicationManager.getApplication().invokeLater {
+            JFRProgramRunner.loadFile(project, outputFile)
+        }
+    }
+
+    private fun doOpenJeffrey(pid: String) {
+        val jfrFile = (model.states[pid] as? RecordingState.Recording)?.outputFile
+            ?: model.lastOutputFile[pid]
+            ?: return
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val url = JeffreyLauncher.startAndGetUrl(jfrFile) ?: run {
+                SwingUtilities.invokeLater {
+                    JOptionPane.showMessageDialog(tableRef(),
+                        "Jeffrey is not available. Run './gradlew downloadJeffrey' to install it.",
+                        "Jeffrey Not Found", JOptionPane.WARNING_MESSAGE)
+                }
+                return@executeOnPooledThread
+            }
+            SwingUtilities.invokeLater { JFRProgramRunner.loadFile(project, jfrFile, url) }
         }
     }
 }
