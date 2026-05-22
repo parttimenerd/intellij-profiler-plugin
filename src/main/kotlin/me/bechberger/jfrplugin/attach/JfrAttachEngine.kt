@@ -1,46 +1,54 @@
 package me.bechberger.jfrplugin.attach
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectRootManager
 import com.sun.tools.attach.VirtualMachine
+import me.bechberger.jfrplugin.config.profilerConfig
 import java.nio.file.Path
 import java.util.logging.Logger
+import javax.management.JMX
+import javax.management.ObjectName
+import javax.management.remote.JMXConnector
+import javax.management.remote.JMXConnectorFactory
+import javax.management.remote.JMXServiceURL
 
 object JfrAttachEngine {
     private val LOG = Logger.getLogger("JfrAttachEngine")
 
-    // We track recording IDs by pid so we can stop the right recording.
     private val recordingIds = mutableMapOf<String, Long>()
+    private val jmxConnections = mutableMapOf<String, JMXConnector>()
+    private val frBeans = mutableMapOf<String, jdk.management.jfr.FlightRecorderMXBean>()
 
     fun start(pid: String, outputFile: Path, project: Project) {
+        val settingsName = project.profilerConfig.jfrConfig.settings.let {
+            // strip path — FlightRecorderMXBean.setPredefinedConfiguration only accepts "profile" / "default"
+            if (it.contains('/') || it.contains('\\')) "profile" else it
+        }
+
         val vm = VirtualMachine.attach(pid)
         try {
-            // Ensure the local management agent is running so we can get a JMX URL.
             vm.startLocalManagementAgent()
-            val props = vm.agentProperties
-            val jmxUrl = props.getProperty("com.sun.management.jmxremote.localConnectorAddress")
+            val jmxUrl = vm.agentProperties.getProperty("com.sun.management.jmxremote.localConnectorAddress")
                 ?: error("Could not obtain JMX connector URL for PID $pid")
 
-            val jmxConn = javax.management.remote.JMXConnectorFactory.connect(
-                javax.management.remote.JMXServiceURL(jmxUrl)
-            )
+            val jmxConn = JMXConnectorFactory.connect(JMXServiceURL(jmxUrl))
             val mbsc = jmxConn.mBeanServerConnection
-            val frBean = javax.management.JMX.newMXBeanProxy(
+            val frBean = JMX.newMXBeanProxy(
                 mbsc,
-                javax.management.ObjectName("jdk.management.jfr:type=FlightRecorder"),
+                ObjectName("jdk.management.jfr:type=FlightRecorder"),
                 jdk.management.jfr.FlightRecorderMXBean::class.java
             )
 
             val recId = frBean.newRecording()
-            val settingsMap = buildSettingsMap(project)
-            frBean.setRecordingSettings(recId, settingsMap)
+            // Use a predefined configuration ("profile" or "default") so all standard
+            // events including jdk.ExecutionSample are enabled with correct periods.
+            frBean.setPredefinedConfiguration(recId, settingsName)
+            frBean.setRecordingOptions(recId, mapOf("name" to "intellij-attach-$pid"))
             frBean.startRecording(recId)
-            recordingIds[pid] = recId
-            LOG.info("JFR recording $recId started on PID $pid → $outputFile")
 
-            // Store the JMX connection for use in stop()
+            recordingIds[pid] = recId
             jmxConnections[pid] = jmxConn
             frBeans[pid] = frBean
+            LOG.info("JFR recording $recId started on PID $pid (config=$settingsName) → $outputFile")
         } finally {
             vm.detach()
         }
@@ -50,7 +58,6 @@ object JfrAttachEngine {
         val recId = recordingIds.remove(pid) ?: error("No active JFR recording for PID $pid")
         val frBean = frBeans.remove(pid) ?: error("No FlightRecorderMXBean for PID $pid")
         val jmxConn = jmxConnections.remove(pid)
-
         try {
             frBean.stopRecording(recId)
             frBean.copyTo(recId, outputFile.toAbsolutePath().toString())
@@ -60,24 +67,4 @@ object JfrAttachEngine {
             jmxConn?.close()
         }
     }
-
-    private fun buildSettingsMap(project: Project): Map<String, String> {
-        // Use the same "profile" or "default" settings as configured for regular profiling.
-        val settingsName = try {
-            project.getService(com.intellij.openapi.project.Project::class.java)
-                ?.let { me.bechberger.jfrplugin.config.ProfilerConfig.get(it).jfrConfig.settings }
-                ?: "profile"
-        } catch (_: Exception) { "profile" }
-
-        return mapOf(
-            "jdk.CPUSample#enabled" to "true",
-            "jdk.CPUSample#period" to "10 ms",
-            "jdk.JavaMonitorWait#enabled" to "true",
-            "jdk.ThreadPark#enabled" to "true",
-            "disk" to settingsName,
-        )
-    }
-
-    private val jmxConnections = mutableMapOf<String, javax.management.remote.JMXConnector>()
-    private val frBeans = mutableMapOf<String, jdk.management.jfr.FlightRecorderMXBean>()
 }

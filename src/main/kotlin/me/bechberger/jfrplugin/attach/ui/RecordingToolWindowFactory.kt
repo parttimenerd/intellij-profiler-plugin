@@ -11,11 +11,14 @@ import me.bechberger.jfrplugin.attach.Engine
 import me.bechberger.jfrplugin.attach.JvmInfo
 import me.bechberger.jfrplugin.attach.RecordingState
 import me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner
+import me.bechberger.jfrplugin.config.profilerConfig
+import me.bechberger.jfrplugin.viewer.JeffreyLauncher
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.nio.file.Files
 import java.time.Duration
 import java.time.Instant
 import javax.swing.*
@@ -134,14 +137,19 @@ private class JvmTableModel : AbstractTableModel() {
 
 private fun actionsPanel(
     state: RecordingState,
+    jfrExists: Boolean,
     onStart: (Engine) -> Unit,
     onStop: () -> Unit,
+    onOpenJeffrey: () -> Unit,
 ): JPanel {
     return JPanel().apply {
         isOpaque = true
         if (state is RecordingState.Idle) {
             add(JButton("JFR").also { it.addActionListener { onStart(Engine.JFR) } })
             add(JButton("async-profiler").also { it.addActionListener { onStart(Engine.ASYNC_PROFILER) } })
+            if (jfrExists) {
+                add(JButton("Open with Jeffrey").also { it.addActionListener { onOpenJeffrey() } })
+            }
         } else {
             add(JButton("Stop & Open").also { it.addActionListener { onStop() } })
         }
@@ -153,7 +161,7 @@ private class ActionsCellRenderer : TableCellRenderer {
         table: JTable, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
     ): Component {
         val state = value as? RecordingState ?: RecordingState.Idle
-        return actionsPanel(state, {}, {})
+        return actionsPanel(state, false, {}, {}, {})
     }
 }
 
@@ -175,13 +183,32 @@ private class ActionsCellEditor(
     ): Component {
         currentPid = model.jvms.getOrNull(row)?.pid ?: return JPanel()
         val state = value as? RecordingState ?: RecordingState.Idle
+        val jfrExists = Files.exists(project.profilerConfig.getJFRFile(project))
         val panel = actionsPanel(
             state,
+            jfrExists,
             onStart = { engine -> doStart(currentPid, engine, row) },
-            onStop = { doStop(currentPid, row) }
+            onStop = { doStop(currentPid, row) },
+            onOpenJeffrey = { doOpenJeffrey() }
         )
         currentPanel = panel
         return panel
+    }
+
+    private fun doOpenJeffrey() {
+        stopCellEditing()
+        val jfrFile = project.profilerConfig.getJFRFile(project)
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val url = JeffreyLauncher.startAndGetUrl(jfrFile) ?: run {
+                SwingUtilities.invokeLater {
+                    JOptionPane.showMessageDialog(tableRef(),
+                        "Jeffrey is not available. Run './gradlew downloadJeffrey' to install it.",
+                        "Jeffrey Not Found", JOptionPane.WARNING_MESSAGE)
+                }
+                return@executeOnPooledThread
+            }
+            SwingUtilities.invokeLater { JFRProgramRunner.loadFile(project, url) }
+        }
     }
 
     private fun doStart(pid: String, engine: Engine, @Suppress("UNUSED_PARAMETER") row: Int) {

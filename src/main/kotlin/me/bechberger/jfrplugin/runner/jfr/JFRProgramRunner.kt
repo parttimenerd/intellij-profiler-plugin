@@ -67,13 +67,14 @@ class JFRProgramRunner : DefaultJavaProgramRunner() {
     companion object {
         const val RUNNER_ID = "JFR Profile Runner"
 
-        fun loadFile(project: Project) {
+        fun loadFile(project: Project, overrideUrl: String? = null) {
             ApplicationManager.getApplication().invokeLater {
                 project.jfrVirtualFile?.let {
                     FileEditorManagerEx.getInstanceEx(project).windows.forEach { window ->
                         window.getComposite(it)?.allEditors?.forEach { editor ->
                             if (editor is JFRFileEditor) {
-                                editor.webViewWindow.reload()
+                                if (overrideUrl != null) editor.webViewWindow.loadUrl(overrideUrl)
+                                else editor.webViewWindow.reload()
                             }
                         }
                     }

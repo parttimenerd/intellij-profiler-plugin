@@ -49,4 +49,14 @@
         <programRunner implementation="me.bechberger.jfrplugin.runner.ap.APProgramRunner"/>
         <executor implementation="me.bechberger.jfrplugin.runner.ap.APExecutor"/>
     </extensions>
+
+    <actions>
+        <action id="me.bechberger.jfrplugin.OpenWithJeffrey"
+                class="me.bechberger.jfrplugin.actions.OpenWithJeffreyAction"
+                text="Open with Jeffrey"
+                description="Open this JFR file in the Jeffrey profiler viewer">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="OpenFile"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
