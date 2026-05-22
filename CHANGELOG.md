@@ -6,14 +6,19 @@
 
 ### Added
 - Attach to running JVMs from a new "JFR Recording" tool window (#36)
-  - Lists all local JVMs with PID and name
+  - Lists all local JVMs with PID and name; search/filter by name or PID
   - Start JFR or async-profiler recordings per process without restarting
   - Stop and immediately open the resulting profile
   - Open previous recordings with Firefox Profiler or Jeffrey
+  - Auto-refreshes every 5 s; scroll position preserved during updates
 - [Jeffrey](https://github.com/petrbouda/jeffrey) profiler viewer integration (#32)
-  - Bundle Jeffrey microscope.jar; auto-launch on a free port; re-downloaded automatically when stale
+  - Bundle Jeffrey 0.9.2; auto-launch on a free port using the first JDK 25+ found on the system
+  - Jeffrey options are hidden when no JDK 25+ is available
   - "Open with Jeffrey" context menu action on JFR files in the project tree
-  - Viewer dropdown in the JFR file editor (Firefox Profiler / Jeffrey)
+  - Supports selecting multiple JFR files or a folder — all recordings are uploaded at once
+  - Single-file open navigates directly to the recording's profile view (no list overview)
+  - Multiple files open Jeffrey's recordings list with all uploads available
+  - Each "Open with Jeffrey" call opens a new tab; multiple Jeffrey tabs can coexist
 - Named JFR output files for attach recordings: `profile-<pid>-<name>.jfr`
 
 ### Fixed

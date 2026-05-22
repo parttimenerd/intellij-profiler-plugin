@@ -4,42 +4,65 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.fileEditor.FileEditorManager
-import me.bechberger.jfrplugin.editor.JFRFileEditor
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.vfs.VirtualFile
 import me.bechberger.jfrplugin.lang.JFRFileType
+import me.bechberger.jfrplugin.viewer.JeffreyBrowserWindowOpener
 import me.bechberger.jfrplugin.viewer.JeffreyLauncher
+import java.nio.file.Path
 
 class OpenWithJeffreyAction : AnAction("Open with Jeffrey") {
 
     override fun getActionUpdateThread() = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
-        val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        e.presentation.isEnabledAndVisible = file?.fileType == JFRFileType
+        val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: emptyArray()
+        e.presentation.isEnabledAndVisible =
+            JeffreyLauncher.isJdkAvailable() && collectJfrFiles(files).isNotEmpty()
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val file = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
-        val url = JeffreyLauncher.startAndGetUrl(file.toNioPath()) ?: run {
-            com.intellij.openapi.ui.Messages.showErrorDialog(
-                project,
-                "Jeffrey is not available. Run './gradlew downloadJeffrey' to install it.",
-                "Jeffrey Not Found"
-            )
-            return
-        }
-        // If the file is already open in a JFRFileEditor, switch that editor to Jeffrey
-        val editors = FileEditorManager.getInstance(project).getEditors(file)
-        val jfrEditor = editors.filterIsInstance<JFRFileEditor>().firstOrNull()
-        if (jfrEditor != null) {
-            jfrEditor.webViewWindow.loadUrl(url)
+        val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: emptyArray()
+        val jfrPaths = collectJfrFiles(files)
+        if (jfrPaths.isEmpty()) return
+
+        if (jfrPaths.size == 1) {
+            // Single file: open via JeffreyFileEditorProvider so the tab is tied to the file
+            val vf = files.firstOrNull { it.fileType == JFRFileType }
+                ?: com.intellij.openapi.vfs.LocalFileSystem.getInstance()
+                    .refreshAndFindFileByNioFile(jfrPaths.first())
+                ?: return
+            ApplicationManager.getApplication().invokeLater {
+                val editors = com.intellij.openapi.fileEditor.FileEditorManager
+                    .getInstance(project).openFile(vf, true)
+                editors.filterIsInstance<me.bechberger.jfrplugin.editor.JeffreyFileEditor>()
+                    .firstOrNull()?.let {
+                        com.intellij.openapi.fileEditor.FileEditorManager
+                            .getInstance(project).setSelectedEditor(vf, "Jeffrey Profile")
+                    }
+            }
         } else {
-            // Open the file first, then load Jeffrey URL
-            FileEditorManager.getInstance(project).openFile(file, true)
-            val opened = FileEditorManager.getInstance(project).getEditors(file)
-                .filterIsInstance<JFRFileEditor>().firstOrNull()
-            opened?.webViewWindow?.loadUrl(url)
+            // Multiple files / folder: upload all, open recordings list in a new tab
+            ApplicationManager.getApplication().executeOnPooledThread {
+                val url = JeffreyLauncher.startOrReuseAndGetUrlForFiles(jfrPaths)
+                    ?: return@executeOnPooledThread
+                ApplicationManager.getApplication().invokeLater {
+                    JeffreyBrowserWindowOpener.openInNewTab(project, url)
+                }
+            }
+        }
+    }
+
+    companion object {
+        fun collectJfrFiles(files: Array<VirtualFile>): List<Path> =
+            files.flatMap { it.collectJfr() }
+
+        private fun VirtualFile.collectJfr(): List<Path> = when {
+            isDirectory -> children.orEmpty().flatMap { it.collectJfr() }
+            fileType == JFRFileType -> listOf(toNioPath())
+            name.endsWith(".jfr") -> listOf(toNioPath())
+            else -> emptyList()
         }
     }
 }

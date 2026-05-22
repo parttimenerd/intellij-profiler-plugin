@@ -33,6 +33,8 @@
                   fieldName="INSTANCE"
                   implementationClass="me.bechberger.jfrplugin.lang.JFRFileType"/>
         <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JFRFileEditorProvider"/>
+        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JeffreyFileEditorProvider"/>
+        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JeffreyUrlFileEditorProvider"/>
 
         <fileType name="Firefox Profiler"
                   extensions="json.gz"
