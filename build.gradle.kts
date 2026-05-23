@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
-val jeffreyVersion = "0.9.2"
+val jeffreyVersion = "0.9.4"
 val jeffreyJarUrl = "https://github.com/petrbouda/jeffrey/releases/download/v$jeffreyVersion/microscope.jar"
 val jeffreyJarDest = layout.projectDirectory.file("src/main/resources/jeffrey/microscope.jar")
 

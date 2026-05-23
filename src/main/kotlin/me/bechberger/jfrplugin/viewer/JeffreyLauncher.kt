@@ -1,5 +1,6 @@
 package me.bechberger.jfrplugin.viewer
 
+import com.intellij.openapi.project.Project
 import java.io.IOException
 import java.net.ServerSocket
 import java.nio.file.Files
@@ -18,109 +19,62 @@ object JeffreyLauncher {
     const val JEFFREY_MIN_JAVA = 25
 
     /**
-     * Starts Jeffrey (or reuses a running instance), uploads [jfrFile] via the REST API,
-     * and returns the URL of the recording page for that specific file.
+     * Starts Jeffrey (or reuses a running instance) and returns the `/quick-open?path=` URL
+     * for [jfrFile]. Jeffrey imports and analyzes the file itself via local path — no upload needed.
      * Returns null if no suitable JDK is available or startup fails.
      */
-    fun startOrReuseAndGetUrl(jfrFile: Path): String? =
-        startOrReuseAndGetUrlForFiles(listOf(jfrFile))
+    fun startOrReuseAndGetUrl(jfrFile: Path, project: Project): String? =
+        startOrReuseAndGetUrlForFiles(listOf(jfrFile), project)
 
     /**
-     * Starts Jeffrey (or reuses a running instance), uploads all [jfrFiles] via the REST API,
-     * and returns a URL pointing to the first recording (or the recordings list when multiple
-     * files are uploaded). Returns null if no suitable JDK is available or startup fails.
+     * Starts Jeffrey (or reuses a running instance) and returns a URL for the given files.
+     * Single file: uses the `/quick-open?path=` deep link (Jeffrey imports + analyzes itself).
+     * Multiple files: imports each via `/from-path`, then returns the recordings list.
      */
-    fun startOrReuseAndGetUrlForFiles(jfrFiles: List<Path>): String? {
+    fun startOrReuseAndGetUrlForFiles(jfrFiles: List<Path>, project: Project): String? {
         if (jfrFiles.isEmpty()) return null
         if (!isRunning()) {
-            if (!startAndGetUrl()) return null
+            if (!startAndGetUrl(project)) return null
         }
         val base = "http://localhost:$currentPort"
-        val profileUrls = jfrFiles.mapNotNull { file ->
-            val recordingId = uploadFile(file) ?: return@mapNotNull null
-            analyzeRecording(recordingId)
+        if (jfrFiles.size == 1) {
+            val encoded = java.net.URLEncoder.encode(jfrFiles.first().toAbsolutePath().toString(), "UTF-8")
+            return "$base/quick-open?path=$encoded"
         }
-        return when {
-            profileUrls.isEmpty() -> "$base/recordings"
-            profileUrls.size == 1 -> profileUrls.first()
-            else -> "$base/recordings"
+        // Multiple files: import each by path (no file bytes sent over HTTP)
+        jfrFiles.forEach { file ->
+            importFromPath(file)
         }
+        return "$base/recordings"
     }
 
-    private fun uploadFile(jfrFile: Path): String? {
+    /** Tells Jeffrey to import a JFR file from its local path. Returns the recordingId or null. */
+    private fun importFromPath(jfrFile: Path): String? {
         val base = "http://localhost:$currentPort"
         return try {
-            val boundary = "jeffreyboundary${System.currentTimeMillis()}"
-            val fileBytes = Files.readAllBytes(jfrFile)
-            val fileName = jfrFile.fileName.toString()
-
-            val body = buildMultipartBody(boundary, fileName, fileBytes)
-
-            val url = java.net.URI("$base/api/internal/recordings").toURL()
+            val url = java.net.URI("$base/api/internal/recordings/from-path").toURL()
             val conn = url.openConnection() as java.net.HttpURLConnection
             conn.requestMethod = "POST"
             conn.doOutput = true
             conn.connectTimeout = 5_000
             conn.readTimeout = 60_000
-            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
-            conn.outputStream.use { it.write(body) }
+            conn.setRequestProperty("Content-Type", "application/json")
+            val body = "{\"path\":\"${jfrFile.toAbsolutePath().toString().replace("\\", "\\\\")}\"}"
+            conn.outputStream.use { it.write(body.toByteArray()) }
 
             if (conn.responseCode == 200) {
                 val response = conn.inputStream.bufferedReader().readText()
                 extractJsonString(response, "recordingId").also {
-                    if (it == null) LOG.warning("Jeffrey upload response missing recordingId: $response")
+                    if (it == null) LOG.warning("Jeffrey from-path response missing recordingId: $response")
                 }
             } else {
-                LOG.warning("Jeffrey upload of ${jfrFile.fileName} returned HTTP ${conn.responseCode}")
+                LOG.warning("Jeffrey from-path of ${jfrFile.fileName} returned HTTP ${conn.responseCode}")
                 null
             }
         } catch (e: Exception) {
-            LOG.warning("Jeffrey upload of ${jfrFile.fileName} failed: ${e.message}")
+            LOG.warning("Jeffrey from-path of ${jfrFile.fileName} failed: ${e.message}")
             null
         }
-    }
-
-    /**
-     * Analyzes a previously uploaded recording and returns the profile URL
-     * (`/profiles/<profileId>/overview`), or null on failure.
-     * The analyze call is synchronous — it returns only after analysis is complete.
-     *
-     * Note: the analyze endpoint path is `/recordings/recordings/<id>/analyze` because
-     * the RecordingsService base is already `/api/internal/recordings` and the method path
-     * adds another `/recordings/<id>/analyze`.
-     */
-    private fun analyzeRecording(recordingId: String): String? {
-        val base = "http://localhost:$currentPort"
-        return try {
-            val url = java.net.URI("$base/api/internal/recordings/recordings/$recordingId/analyze").toURL()
-            val conn = url.openConnection() as java.net.HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.connectTimeout = 5_000
-            conn.readTimeout = 300_000
-            conn.connect()
-
-            if (conn.responseCode == 200) {
-                val response = conn.inputStream.bufferedReader().readText()
-                val profileId = extractJsonString(response, "profileId")
-                if (profileId != null) "$base/profiles/$profileId/overview"
-                else { LOG.warning("Jeffrey analyze missing profileId: $response"); null }
-            } else {
-                LOG.warning("Jeffrey analyze of $recordingId returned HTTP ${conn.responseCode}")
-                null
-            }
-        } catch (e: Exception) {
-            LOG.warning("Jeffrey analyze of $recordingId failed: ${e.message}")
-            null
-        }
-    }
-
-    private fun buildMultipartBody(boundary: String, fileName: String, fileBytes: ByteArray): ByteArray {
-        val crlf = "\r\n"
-        val header = "--$boundary$crlf" +
-            "Content-Disposition: form-data; name=\"file\"; filename=\"$fileName\"$crlf" +
-            "Content-Type: application/octet-stream$crlf$crlf"
-        val footer = "$crlf--$boundary--$crlf"
-        return header.toByteArray() + fileBytes + footer.toByteArray()
     }
 
     private fun extractJsonString(json: String, key: String): String? {
@@ -128,7 +82,7 @@ object JeffreyLauncher {
         return pattern.find(json)?.groupValues?.get(1)
     }
 
-    private fun startAndGetUrl(): Boolean {
+    private fun startAndGetUrl(project: Project): Boolean {
         stop()
 
         val jar = extractJar() ?: run {
@@ -146,11 +100,19 @@ object JeffreyLauncher {
 
         val port = findFreePort()
 
-        val cmd = listOf(
+        val ideService = JeffreyIdeJumpService.getInstance(project)
+        ideService.start()
+        val idePort = ideService.port
+
+        val cmd = mutableListOf(
             javaExe,
             "-jar", jar.toAbsolutePath().toString(),
             "--server.port=$port"
         )
+        if (idePort > 0) {
+            cmd += "--jeffrey.microscope.ide.enabled=true"
+            cmd += "--jeffrey.microscope.ide.base-url=http://localhost:$idePort"
+        }
         LOG.info("Jeffrey command: $cmd")
 
         val logFile = pluginDataDir().resolve("jeffrey.log")

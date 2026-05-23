@@ -19,7 +19,7 @@ class JeffreyFileEditor(private val project: Project, private val virtualFile: V
         component = placeholder
 
         Thread {
-            val url = JeffreyLauncher.startOrReuseAndGetUrl(virtualFile.toNioPath())
+            val url = JeffreyLauncher.startOrReuseAndGetUrl(virtualFile.toNioPath(), project)
             if (url != null) {
                 val browser = JeffreyBrowserWindow(project, url)
                 browserWindow = browser

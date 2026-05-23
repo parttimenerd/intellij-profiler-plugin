@@ -19,6 +19,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
+        <projectService serviceImplementation="me.bechberger.jfrplugin.viewer.JeffreyIdeJumpService"/>
+
         <toolWindow id="JFR Recording"
                     anchor="bottom"
                     icon="/icons/jfrRecording.svg"

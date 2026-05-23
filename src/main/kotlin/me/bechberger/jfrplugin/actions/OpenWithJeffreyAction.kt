@@ -45,7 +45,7 @@ class OpenWithJeffreyAction : AnAction("Open with Jeffrey") {
         } else {
             // Multiple files / folder: upload all, open recordings list in a new tab
             ApplicationManager.getApplication().executeOnPooledThread {
-                val url = JeffreyLauncher.startOrReuseAndGetUrlForFiles(jfrPaths)
+                val url = JeffreyLauncher.startOrReuseAndGetUrlForFiles(jfrPaths, project)
                     ?: return@executeOnPooledThread
                 ApplicationManager.getApplication().invokeLater {
                     JeffreyBrowserWindowOpener.openInNewTab(project, url)
