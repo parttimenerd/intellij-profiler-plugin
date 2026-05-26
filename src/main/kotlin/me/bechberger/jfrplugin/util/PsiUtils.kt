@@ -19,6 +19,25 @@ object PsiUtils {
 
     private val logger = Logger.getLogger("JFRFileEditor")
 
+    fun hasClass(project: Project, fqn: String): Boolean {
+        return ApplicationManager.getApplication().runReadAction<Boolean> {
+            val dot = fqn.lastIndexOf('.')
+            val pkg = if (dot >= 0) fqn.substring(0, dot) else ""
+            val simpleName = if (dot >= 0) fqn.substring(dot + 1) else fqn
+            findClass(project, simpleName, pkg) != null
+        }
+    }
+
+    fun hasMethod(project: Project, fqn: String, methodSig: String): Boolean {
+        return ApplicationManager.getApplication().runReadAction<Boolean> {
+            val dot = fqn.lastIndexOf('.')
+            val pkg = if (dot >= 0) fqn.substring(0, dot) else ""
+            val simpleName = if (dot >= 0) fqn.substring(dot + 1) else fqn
+            val klass = findClass(project, simpleName, pkg) ?: return@runReadAction false
+            getMethodInClass(klass, methodSig) != null
+        }
+    }
+
     fun navigateToClass(project: Project, className: String, pkg: String, line: Int, method: String) {
         ApplicationManager.getApplication().runReadAction {
             ApplicationManager.getApplication().invokeLater {

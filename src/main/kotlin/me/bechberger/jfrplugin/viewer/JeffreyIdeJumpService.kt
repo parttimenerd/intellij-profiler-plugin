@@ -67,20 +67,42 @@ class JeffreyIdeJumpService(private val project: Project) {
                 } else ""
 
                 val parts = requestLine.split(" ")
-                if (parts.size < 2 || parts[0] != "POST") {
-                    respond(conn, 405, "Method Not Allowed")
+                if (parts.size < 2) {
+                    respond(conn, 400, "Bad Request")
                     return
                 }
 
+                val method = parts[0]
                 val path = parts[1]
+
                 if (!path.startsWith("/ide/")) {
                     respond(conn, 404, "Not Found")
                     return
                 }
 
+                // GET /ide/has/<fqn> or GET /ide/has/<fqn>#<method>
+                if (method == "GET" && path.startsWith("/ide/has/")) {
+                    val raw = java.net.URLDecoder.decode(path.removePrefix("/ide/has/"), "UTF-8")
+                    val hashIdx = raw.indexOf('#')
+                    if (hashIdx >= 0) {
+                        val fqn = raw.substring(0, hashIdx)
+                        val methodSig = raw.substring(hashIdx + 1)
+                        val resolved = PsiUtils.hasMethod(project, fqn, methodSig)
+                        respondJson(conn, """{"resolved":$resolved}""")
+                    } else {
+                        val resolved = PsiUtils.hasClass(project, raw)
+                        respondJson(conn, """{"resolved":$resolved}""")
+                    }
+                    return
+                }
+
+                if (method != "POST") {
+                    respond(conn, 405, "Method Not Allowed")
+                    return
+                }
+
                 // Path: /ide/com.example.Foo.methodName — last segment is method, rest is FQN
                 val fqnAndMethod = path.removePrefix("/ide/").let {
-                    // URL-decode %XX sequences
                     java.net.URLDecoder.decode(it, "UTF-8")
                 }
                 val lastDot = fqnAndMethod.lastIndexOf('.')
@@ -114,6 +136,14 @@ class JeffreyIdeJumpService(private val project: Project) {
     private fun respond(conn: Socket, status: Int, message: String) {
         val body = message.toByteArray()
         val response = "HTTP/1.1 $status $message\r\nContent-Length: ${body.size}\r\nConnection: close\r\n\r\n"
+        conn.outputStream.write(response.toByteArray())
+        conn.outputStream.write(body)
+        conn.outputStream.flush()
+    }
+
+    private fun respondJson(conn: Socket, json: String) {
+        val body = json.toByteArray()
+        val response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: ${body.size}\r\nConnection: close\r\n\r\n"
         conn.outputStream.write(response.toByteArray())
         conn.outputStream.write(body)
         conn.outputStream.flush()
