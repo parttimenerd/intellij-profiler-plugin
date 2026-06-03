@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.0.18] - 2026-06-03
+
 ### Added
 - Attach to running JVMs from a new "JFR Recording" tool window (#36)
   - Lists all local JVMs with PID and name; search/filter by name or PID
@@ -12,14 +14,16 @@
   - Open previous recordings with Firefox Profiler or Jeffrey
   - Auto-refreshes every 5 s; scroll position preserved during updates
 - [Jeffrey](https://github.com/petrbouda/jeffrey) profiler viewer integration (#32)
-  - Bundle Jeffrey 0.9.2; auto-launch on a free port using the first JDK 25+ found on the system
+  - Bundle Jeffrey 0.9.4; auto-launch on a free port using the first JDK 25+ found on the system
   - Jeffrey options are hidden when no JDK 25+ is available
   - "Open with Jeffrey" context menu action on JFR files in the project tree
   - Supports selecting multiple JFR files or a folder — all recordings are uploaded at once
   - Single-file open navigates directly to the recording's profile view (no list overview)
   - Multiple files open Jeffrey's recordings list with all uploads available
   - Each "Open with Jeffrey" call opens a new tab; multiple Jeffrey tabs can coexist
+  - IDE jump server: navigate from Jeffrey flame graph directly to source in the IDE
 - Named JFR output files for attach recordings: `profile-<pid>-<name>.jfr`
+- Enable `jdk.CPUTimeSample` event (JEP 509) by default when profiling with a Java 25+ JDK; recognized as an execution sample in the Firefox Profiler view
 
 ### Fixed
 - Profiling JUnit and TestNG test run configurations now works (#29)
@@ -32,7 +36,7 @@
 - Migrate build from org.jetbrains.intellij 1.x to org.jetbrains.intellij.platform 2.6.0
 - Upgrade Kotlin 1.9 → 2.1, Java toolchain 11 → 21
 - Update ap-loader to 4.4-13 (async-profiler with built-in jattach)
-- Update jfrtofp to 0.0.5-SNAPSHOT and jfrtofp-server to 0.0.3-SNAPSHOT
+- Update jfrtofp to 0.0.6-SNAPSHOT and jfrtofp-server to 0.0.4-SNAPSHOT
 
 ## [0.0.17]
 
