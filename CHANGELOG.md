@@ -36,7 +36,18 @@
 - Migrate build from org.jetbrains.intellij 1.x to org.jetbrains.intellij.platform 2.6.0
 - Upgrade Kotlin 1.9 → 2.1, Java toolchain 11 → 21
 - Update ap-loader to 4.4-13 (async-profiler with built-in jattach)
-- Update jfrtofp to 0.0.6 and jfrtofp-server to 0.0.4 (adds `jdk.CPUTimeSample` support)
+- Update jfrtofp to 0.0.7 and jfrtofp-server to 0.0.4 — significantly faster and smaller JFR → Firefox Profiler conversion:
+  - Adds `jdk.CPUTimeSample` support
+  - Switch JFR parsing to [jafar](https://github.com/btraceio/jafar) for streaming reads
+  - Output-side memory now bounded via per-thread spill-to-disk + k-way merge
+  - Hot-path JSON emitted through a custom generator instead of `kotlinx.serialization`
+  - Default-on output-size reductions: drop redundant marker `data["type"]`/`data["startTime"]`,
+    drop `cause.time` ISO strings, quantize timestamps to 4 decimals, drop JFR sentinel longs,
+    null-out empty `threadCPUDelta`, omit default-zero `eventDelay`
+  - Default-off `DEFAULT_NOISY_EVENTS` bundle filters high-volume GC/metaspace/ZGC detail events
+    (e.g. `jdk.ObjectAllocationInNewTLAB`, `jdk.ZStatisticsCounter`); typical conversions emit
+    ~50–85% smaller gzipped JSON
+  - Fix handling of files without execution samples (#30)
 
 ## [0.0.17]
 
