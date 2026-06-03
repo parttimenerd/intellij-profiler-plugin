@@ -127,7 +127,7 @@ dependencies {
     implementation("me.bechberger:jfrtofp-server:0.0.3-SNAPSHOT") {
         isChanging = true
     }
-    implementation("me.bechberger:jfrtofp:0.0.5-SNAPSHOT") {
+    implementation("me.bechberger:jfrtofp:0.0.6-SNAPSHOT") {
         isChanging = true
     }
     implementation("me.bechberger:ap-loader-all:4.4-13")
