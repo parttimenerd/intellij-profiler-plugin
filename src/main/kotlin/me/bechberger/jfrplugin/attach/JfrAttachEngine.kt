@@ -43,6 +43,14 @@ object JfrAttachEngine {
             // events including jdk.ExecutionSample are enabled with correct periods.
             frBean.setPredefinedConfiguration(recId, settingsName)
             frBean.setRecordingOptions(recId, mapOf("name" to "intellij-attach-$pid"))
+            // Enable CPU-time profiling on Java 25+ Linux targets (JEP 509, Linux only, experimental).
+            val targetProps = vm.systemProperties
+            val targetMajorVersion = targetProps.getProperty("java.vm.specification.version")
+                ?.toIntOrNull() ?: 0
+            val targetIsLinux = targetProps.getProperty("os.name", "").lowercase().contains("linux")
+            if (targetMajorVersion >= 25 && targetIsLinux) {
+                frBean.setEventSettings(recId, mapOf("jdk.CPUTimeSample#enabled" to "true"))
+            }
             frBean.startRecording(recId)
 
             recordingIds[pid] = recId
