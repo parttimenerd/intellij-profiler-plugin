@@ -36,7 +36,7 @@
 - Migrate build from org.jetbrains.intellij 1.x to org.jetbrains.intellij.platform 2.6.0
 - Upgrade Kotlin 1.9 → 2.1, Java toolchain 11 → 21
 - Update ap-loader to 4.4-13 (async-profiler with built-in jattach)
-- Update jfrtofp to 0.0.6-SNAPSHOT and jfrtofp-server to 0.0.4-SNAPSHOT (adds `jdk.CPUTimeSample` support)
+- Update jfrtofp to 0.0.6 and jfrtofp-server to 0.0.4 (adds `jdk.CPUTimeSample` support)
 
 ## [0.0.17]
 
