@@ -23,7 +23,7 @@
   - Each "Open with Jeffrey" call opens a new tab; multiple Jeffrey tabs can coexist
   - IDE jump server: navigate from Jeffrey flame graph directly to source in the IDE
 - Named JFR output files for attach recordings: `profile-<pid>-<name>.jfr`
-- Enable `jdk.CPUTimeSample` event (JEP 509) by default when profiling with a Java 25+ JDK; recognized as an execution sample in the Firefox Profiler view
+- Enable `jdk.CPUTimeSample` event (JEP 509) by default when profiling with a Java 25+ JDK on Linux; recognized as an execution sample in the Firefox Profiler view
 
 ### Fixed
 - Profiling JUnit and TestNG test run configurations now works (#29)
