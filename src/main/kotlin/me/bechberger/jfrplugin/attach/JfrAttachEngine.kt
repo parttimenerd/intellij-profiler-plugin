@@ -49,7 +49,7 @@ object JfrAttachEngine {
                 ?.toIntOrNull() ?: 0
             val targetIsLinux = targetProps.getProperty("os.name", "").lowercase().contains("linux")
             if (targetMajorVersion >= 25 && targetIsLinux) {
-                frBean.setEventSettings(recId, mapOf("jdk.CPUTimeSample#enabled" to "true"))
+                frBean.setRecordingSettings(recId, mapOf("jdk.CPUTimeSample#enabled" to "true"))
             }
             frBean.startRecording(recId)
 

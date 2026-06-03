@@ -53,6 +53,7 @@ java {
 fun properties(key: String) = project.findProperty(key).toString()
 
 repositories {
+    mavenLocal()
     mavenCentral()
     gradlePluginPortal()
     maven {
