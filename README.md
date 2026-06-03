@@ -6,18 +6,20 @@
 
 <!-- Plugin description -->
 
-An open-source profiler plugin for JDK 11+ based on JFR, async-profiler
-and [Firefox Profiler](https://github.com/firefox-devtools/profiler).
+An open-source profiler plugin for JDK 11+ based on JFR, async-profiler,
+[Firefox Profiler](https://github.com/firefox-devtools/profiler), and
+[Jeffrey](https://github.com/petrbouda/jeffrey).
 
 This plugin supports
 
-- profiling Java applications directly from run configurations (JFR and async-profiler)
+- profiling Java applications directly from run configurations using JFR or async-profiler
 - attaching to already-running JVMs from the "JFR Recording" tool window —
   start and stop recordings without restarting the process
-- viewing JFR files in IntelliJ using Firefox Profiler or Jeffrey
-- flamegraphs, call trees, function tables, marker timelines, and more
+- viewing JFR files with Firefox Profiler or Jeffrey (click frames in Jeffrey's flame graph to jump directly to source)
+- CPU-time profiling via `jdk.CPUTimeSample` (JEP 509) on Java 25+ Linux runtimes
+- flamegraphs, call trees, function tables, marker timelines, allocation profiles, and more
 
-This plugin is currently under active development; feel free to try it and open issues for any bugs or suggestions.
+This plugin is under active development; feel free to try it and open issues for any bugs or suggestions.
 
 <!-- Plugin description end -->
 
