@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [0.0.19] - 2026-06-25
+
+### Fixed
+- Memory tracks (Used heap / Committed heap) missing from profiles (#37) — jdk.GCHeapSummary was incorrectly included in the noisy-events filter in jfrtofp 0.0.7
+
+### Changed
+- Update jfrtofp to 0.0.8 and jfrtofp-server to 0.0.5
+
 ## [0.0.18] - 2026-06-03
 
 ### Added
