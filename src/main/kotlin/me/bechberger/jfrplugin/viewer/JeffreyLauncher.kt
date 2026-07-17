@@ -1,6 +1,10 @@
 package me.bechberger.jfrplugin.viewer
 
 import com.intellij.openapi.project.Project
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import java.io.IOException
 import java.net.ServerSocket
 import java.nio.file.Files
@@ -59,7 +63,7 @@ object JeffreyLauncher {
             conn.connectTimeout = 5_000
             conn.readTimeout = 60_000
             conn.setRequestProperty("Content-Type", "application/json")
-            val body = "{\"path\":\"${jfrFile.toAbsolutePath().toString().replace("\\", "\\\\")}\"}"
+            val body = Json.encodeToString(buildJsonObject { put("path", jfrFile.toAbsolutePath().toString()) })
             conn.outputStream.use { it.write(body.toByteArray()) }
 
             if (conn.responseCode == 200) {
@@ -122,18 +126,9 @@ object JeffreyLauncher {
             .start()
         currentPort = port
 
-        // Fast-fail: if the process exits within 2 s it crashed immediately
-        TimeUnit.MILLISECONDS.sleep(2000)
-        if (process?.isAlive == false) {
-            LOG.warning("Jeffrey process exited immediately — see ${logFile.toAbsolutePath()}")
-            try { Files.readAllLines(logFile).takeLast(20).forEach { LOG.warning("Jeffrey: $it") }
-            } catch (_: Exception) {}
-            stop()
-            return false
-        }
-
         if (!waitForReady(port, timeoutSeconds = 60)) {
-            LOG.warning("Jeffrey did not become ready within 60 s — see ${logFile.toAbsolutePath()}")
+            val reason = if (process?.isAlive == false) "exited immediately" else "did not become ready within 60 s"
+            LOG.warning("Jeffrey $reason — see ${logFile.toAbsolutePath()}")
             try { Files.readAllLines(logFile).takeLast(20).forEach { LOG.warning("Jeffrey: $it") }
             } catch (_: Exception) {}
             stop()
@@ -160,10 +155,7 @@ object JeffreyLauncher {
         val dest = pluginDataDir().resolve("microscope.jar")
         Files.createDirectories(dest.parent)
         resource.use { input ->
-            val available = input.available().toLong()
-            if (!Files.exists(dest) || Files.size(dest) != available) {
-                Files.copy(input, dest, StandardCopyOption.REPLACE_EXISTING)
-            }
+            Files.copy(input, dest, StandardCopyOption.REPLACE_EXISTING)
         }
         return dest
     }

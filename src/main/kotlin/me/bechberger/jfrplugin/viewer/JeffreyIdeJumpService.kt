@@ -28,6 +28,7 @@ class JeffreyIdeJumpService(private val project: Project) {
         if (serverSocket?.isClosed == false) return
         val ss = ServerSocket(0)
         serverSocket = ss
+        Disposer.register(project) { stop() }
         LOG.info("JeffreyIdeJumpService listening on port ${ss.localPort}")
         ApplicationManager.getApplication().executeOnPooledThread {
             while (!ss.isClosed) {

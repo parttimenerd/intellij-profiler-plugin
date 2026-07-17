@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## [0.0.20] - 2026-07-17
+
+### Fixed
+- Profile viewer now uses [parttimenerd.github.io/firefox-profiler](https://parttimenerd.github.io/firefox-profiler) instead of the bundled local copy; share/upload still goes to `api.profiler.firefox.com`
+- JVM version checks for `-Xlog:jfr+startup` and `-XX:+FlightRecorder` flags replaced fragile regex with direct integer comparison
+- Jeffrey `extractJar()` no longer uses unreliable `InputStream.available()` for cache invalidation; jar is always overwritten on startup
+- Jeffrey startup no longer uses a fixed 2-second sleep to detect immediate crashes; `waitForReady` loop handles it
+- JSON body in Jeffrey `importFromPath` now built with `kotlinx.serialization` (fixes Windows path backslash corruption)
+- `JeffreyIdeJumpService` server socket registered as `Disposable` so it is closed when the project closes
+- Recording state correctly restored in the attach tool window if `stop()` fails (was left as Idle on error)
+- Last output file for a PID now persisted in `AttachService` instead of the panel-local table model; survives tool window close/reopen
+- Gradle profiling init script now also injects JVM args into `JavaExec` tasks (in addition to `Test`), enabling profiling of `./gradlew run`
+
+### Changed
+- Update jfrtofp-server to 0.0.6
+
 ## [0.0.19] - 2026-06-25
 
 ### Fixed

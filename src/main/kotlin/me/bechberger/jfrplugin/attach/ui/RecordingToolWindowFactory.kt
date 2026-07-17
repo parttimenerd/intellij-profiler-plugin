@@ -151,7 +151,6 @@ private class JvmTableModel : AbstractTableModel() {
         private set
     var states: MutableMap<String, RecordingState> = mutableMapOf()
         private set
-    val lastOutputFile: MutableMap<String, java.nio.file.Path> = mutableMapOf()
 
     private val columns = arrayOf("PID", "Name", "State", "Actions")
 
@@ -182,10 +181,6 @@ private class JvmTableModel : AbstractTableModel() {
     }
 
     fun setState(pid: String, state: RecordingState) {
-        val prev = states[pid]
-        if (prev is RecordingState.Recording && state is RecordingState.Idle) {
-            lastOutputFile[pid] = prev.outputFile
-        }
         states[pid] = state
         val row = jvms.indexOfFirst { it.pid == pid }
         if (row >= 0) fireTableRowsUpdated(row, row)
@@ -237,7 +232,7 @@ private class ActionsCellRenderer(
         val state = value as? RecordingState ?: RecordingState.Idle
         val existingFile = when (state) {
             is RecordingState.Recording -> state.outputFile
-            is RecordingState.Idle      -> model.lastOutputFile[pid]
+            is RecordingState.Idle      -> service.lastOutputFile[pid]
         }
         val jfrExists = existingFile != null && Files.exists(existingFile)
 
@@ -290,16 +285,16 @@ private class ActionsCellRenderer(
     }
 
     private fun doStop(pid: String) {
-        val outputFile = (model.states[pid] as? RecordingState.Recording)?.outputFile
+        val priorState = model.states[pid] as? RecordingState.Recording ?: return
         SwingUtilities.invokeLater { model.setState(pid, RecordingState.Idle) }
         ApplicationManager.getApplication().executeOnPooledThread {
             try {
                 val stopped = service.stop(pid)
-                val file = outputFile ?: stopped
-                LocalFileSystem.getInstance().refreshNioFiles(listOf(file), false, false, null)
+                LocalFileSystem.getInstance().refreshNioFiles(listOf(stopped), false, false, null)
                 SwingUtilities.invokeLater { model.setState(pid, RecordingState.Idle) }
             } catch (e: Exception) {
                 SwingUtilities.invokeLater {
+                    model.setState(pid, priorState)
                     JOptionPane.showMessageDialog(tableRef(), "Failed to stop recording:\n${e.message}", "Error", JOptionPane.ERROR_MESSAGE)
                 }
             }
@@ -308,7 +303,7 @@ private class ActionsCellRenderer(
 
     private fun doOpen(pid: String) {
         val outputFile = (model.states[pid] as? RecordingState.Recording)?.outputFile
-            ?: model.lastOutputFile[pid] ?: return
+            ?: service.lastOutputFile[pid] ?: return
         ApplicationManager.getApplication().invokeLater {
             JFRProgramRunner.loadFile(project, outputFile)
         }
@@ -316,7 +311,7 @@ private class ActionsCellRenderer(
 
     private fun doOpenJeffrey(pid: String) {
         val jfrFile = (model.states[pid] as? RecordingState.Recording)?.outputFile
-            ?: model.lastOutputFile[pid] ?: return
+            ?: service.lastOutputFile[pid] ?: return
         ApplicationManager.getApplication().invokeLater {
             JFRProgramRunner.loadFile(project, jfrFile)
             val vf = com.intellij.openapi.vfs.LocalFileSystem.getInstance()

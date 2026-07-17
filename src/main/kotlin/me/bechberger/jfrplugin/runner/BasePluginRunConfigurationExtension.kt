@@ -109,7 +109,7 @@ abstract class BasePluginRunConfigurationExtension(private val name: String, pri
         }
     }
 
-    /** Writes a Gradle init script that injects [vmArgs] into every Test task's jvmArgs.
+    /** Writes a Gradle init script that injects [vmArgs] into every Test and JavaExec task's jvmArgs.
      *  Returns the absolute path of the written file. */
     private fun writeGradleInitScript(vmArgs: List<String>): String {
         val escapedArgs = vmArgs.joinToString(", ") { arg ->
@@ -119,6 +119,9 @@ abstract class BasePluginRunConfigurationExtension(private val name: String, pri
         val script = """
             allprojects {
                 tasks.withType(Test).configureEach {
+                    jvmArgs($escapedArgs)
+                }
+                tasks.withType(JavaExec).configureEach {
                     jvmArgs($escapedArgs)
                 }
             }

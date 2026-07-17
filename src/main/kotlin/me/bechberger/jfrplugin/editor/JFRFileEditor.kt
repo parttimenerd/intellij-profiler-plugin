@@ -8,7 +8,6 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import me.bechberger.jfrplugin.config.profilerConfig
 import javax.swing.JComponent
-import java.util.logging.Logger
 
 class JFRFileEditor(private val project: Project, private val virtualFile: VirtualFile) : FileEditorBase() {
     val webViewWindow: WebViewWindow
@@ -47,6 +46,5 @@ class JFRFileEditor(private val project: Project, private val virtualFile: Virtu
 
     companion object {
         const val NAME = "Java Profile Viewer"
-        private val logger = Logger.getLogger("JFRFileEditor")
     }
 }

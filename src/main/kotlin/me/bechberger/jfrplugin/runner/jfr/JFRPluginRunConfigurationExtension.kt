@@ -14,18 +14,18 @@ class JFRPluginRunConfigurationExtension : BasePluginRunConfigurationExtension("
         val vmParametersList = mutableListOf<String>()
         vmParametersList.add("-XX:+UnlockDiagnosticVMOptions")
         vmParametersList.add("-XX:+DebugNonSafepoints")
-        val versionString = ProjectRootManager.getInstance(project).projectSdk?.versionString ?: ""
-        val majorVersion = Regex("version \"(\\d+)").find(versionString)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+        val majorVersion = ProjectRootManager.getInstance(project).projectSdk?.versionString
+            ?.let { Regex("version \"(\\d+)").find(it)?.groupValues?.get(1)?.toIntOrNull() } ?: 0
         val isLinux = System.getProperty("os.name", "").lowercase().contains("linux")
         val cpuTimeSampleOption = if (majorVersion >= 25 && isLinux) ",jdk.CPUTimeSample#enabled=true" else ""
         vmParametersList.add(
             "-XX:StartFlightRecording=filename=${project.jfrFile}," +
                 "settings='${project.jfrSettingsFile}',dumponexit=true$cpuTimeSampleOption",
         )
-        if (!versionString.matches("(.*1[.][0-9][.].+)|(.*(8|9|10|11|12|13|14|15|16)[.][0-9]+[.][0-9]+.*)".toRegex())) {
+        if (majorVersion == 0 || majorVersion >= 17) {
             vmParametersList.add("-Xlog:jfr+startup=error")
         }
-        if (versionString.matches(".*(8|9|10|11|12)[.][0-9]+[.][0-9]+.*".toRegex())) {
+        if (majorVersion in 8..12) {
             vmParametersList.add("-XX:+FlightRecorder")
         }
         return vmParametersList

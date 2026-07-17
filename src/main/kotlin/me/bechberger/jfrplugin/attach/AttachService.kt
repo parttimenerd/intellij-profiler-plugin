@@ -27,6 +27,7 @@ sealed class RecordingState {
 class AttachService(private val project: Project) {
 
     private val states = ConcurrentHashMap<String, RecordingState>()
+    val lastOutputFile = ConcurrentHashMap<String, Path>()
 
     fun listJvms(): List<JvmInfo> {
         return try {
@@ -61,6 +62,7 @@ class AttachService(private val project: Project) {
             Engine.JFR -> JfrAttachEngine.stop(pid, st.outputFile)
             Engine.ASYNC_PROFILER -> ApAttachEngine.stop(pid, st.outputFile)
         }
+        lastOutputFile[pid] = st.outputFile
         states[pid] = RecordingState.Idle
         return st.outputFile
     }
