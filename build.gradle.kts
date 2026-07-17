@@ -60,6 +60,14 @@ repositories {
         url = uri("https://central.sonatype.com/repository/maven-snapshots/")
         mavenContent { snapshotsOnly() }
     }
+    maven {
+        url = uri("https://maven.pkg.github.com/parttimenerd/jfrtofp-server")
+        credentials {
+            username = providers.environmentVariable("GITHUB_ACTOR").orNull ?: "token"
+            password = providers.environmentVariable("GITHUB_TOKEN").orNull
+                ?: providers.gradleProperty("gpr.key").orNull ?: ""
+        }
+    }
     intellijPlatform {
         defaultRepositories()
     }
