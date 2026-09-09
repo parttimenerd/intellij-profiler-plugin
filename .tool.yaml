@@ -1,0 +1,27 @@
+tag: ready
+github_url: https://github.com/parttimenerd/intellij-profiler-plugin
+github_pages: https://plugins.jetbrains.com/plugin/20937-java-jfr-profiler
+tagline: >-
+  IntelliJ plugin for JFR-based profiling. Profile Java applications directly from run configurations
+  using JFR or async-profiler, attach to running JVMs, and view recordings with the Firefox Profiler
+  or Jeffrey UI — flame graphs, call trees, allocation profiles, and marker timelines, all inside the IDE.
+tagline_short: IntelliJ plugin — JFR/async-profiler profiling, flame graphs, and JFR file viewer inside the IDE.
+when_to_use:
+  - You want to profile a Java app or test from an IntelliJ run configuration without leaving the IDE
+  - You want to attach to a running JVM and start/stop JFR recordings from the tool window
+  - You want to view .jfr files with Firefox Profiler or Jeffrey inside IntelliJ
+  - You need CPU-time profiling via jdk.CPUTimeSample (JEP 509) on Java 25+ Linux
+when_not_to_use:
+  - You are not using IntelliJ IDEA (use jstall or async-profiler directly)
+  - You need continuous long-running recordings without IDE attachment (use condensed-data + JFR CLI)
+links:
+  - label: JetBrains Marketplace ↗
+    url: https://plugins.jetbrains.com/plugin/20937-java-jfr-profiler
+install:
+  - label: IntelliJ plugin manager
+    lang: text
+    code: |
+      Settings → Plugins → search "Java JFR Profiler" → Install
+note: >-
+  Requires JDK 11+. JFR profiling is available on all JDK 11+ builds; async-profiler profiling
+  requires Linux or macOS. CPU-time profiling (jdk.CPUTimeSample) requires Java 25+ on Linux.
