@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### Fixed
+- Opening a JFR file crashed with `NoClassDefFoundError: io/javalin/core/util/JavalinException` because Javalin, Jetty, and Jackson transitive dependencies of jfrtofp-server were missing from the plugin bundle ([#38](https://github.com/parttimenerd/intellij-profiler-plugin/issues/38))
+
+### Changed
+- Update jfrtofp-server to 0.0.8 (Javalin 4.6.7 → 7.2.3, Jetty 9 → 12)
+
+### Added
+- CI test that loads all plugin-bundled JARs into an isolated classloader and verifies required runtime classes (Javalin, Jetty, Jackson) are present, preventing future missing-dependency regressions
+
 ## [0.0.20] - 2026-07-17
 
 ### Fixed

@@ -133,7 +133,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-    implementation("me.bechberger:jfrtofp-server:0.0.6") {
+    implementation("me.bechberger:jfrtofp-server:0.0.8") {
         isChanging = true
     }
     implementation("me.bechberger:jfrtofp:0.0.8") {
