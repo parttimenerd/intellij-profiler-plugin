@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Extract pluginVersion
         id: get_version
@@ -72,6 +72,9 @@ jobs:
 
       # Build the plugin and prepare the artifact for the next steps
       - name: Build Plugin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: |
           ./gradlew build
           ./gradlew buildPlugin
@@ -84,8 +87,14 @@ jobs:
           cd ${{ github.workspace }}/build/libs
           FILENAME="Java JFR Profiler-all.jar"
           unzip "$FILENAME" -d content
-
           echo "filename=${FILENAME:0:-4}" >> $GITHUB_OUTPUT
+
+      - name: Find distribution zip
+        id: dist
+        shell: bash
+        run: |
+          ZIP=$(ls "${{ github.workspace }}/build/distributions/"*.zip | head -1)
+          echo "path=$ZIP" >> $GITHUB_OUTPUT
 
       - name: Extract changelog for this version
         id: changelog
@@ -122,7 +131,7 @@ jobs:
             ${{ steps.changelog.outputs.changelog }}
           files: |
             LICENSE
-            ./build/distributions/intellij-profiler-plugin.zip
+            ${{ steps.dist.outputs.path }}
             ./build/libs/Java\ JFR Profiler-all.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

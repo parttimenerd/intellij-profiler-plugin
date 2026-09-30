@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.0.21] - 2026-10-01
+
 ### Fixed
 - Opening a JFR file crashed with `NoClassDefFoundError: io/javalin/core/util/JavalinException` because Javalin, Jetty, and Jackson transitive dependencies of jfrtofp-server were missing from the plugin bundle ([#38](https://github.com/parttimenerd/intellij-profiler-plugin/issues/38))
 
