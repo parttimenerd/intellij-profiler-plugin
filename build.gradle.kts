@@ -121,6 +121,7 @@ dependencies {
     intellijPlatform {
         intellijIdeaCommunity(properties("platformVersion"))
         bundledPlugin("com.intellij.java")
+        bundledPlugin("com.intellij.mcpServer")
         pluginVerifier()
         zipSigner()
     }
@@ -128,12 +129,12 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.20"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.20")
 
-    implementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.4.20")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-    implementation("me.bechberger:jfrtofp-server:0.0.9") {
+    implementation("me.bechberger:jfrtofp-server:0.0.10") {
         isChanging = true
     }
     implementation("me.bechberger:jfrtofp:0.0.9") {
