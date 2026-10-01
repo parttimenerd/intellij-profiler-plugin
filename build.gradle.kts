@@ -5,14 +5,14 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
-val jeffreyVersion = "0.9.4"
+val jeffreyVersion = "0.13.32"
 val jeffreyJarUrl = "https://github.com/petrbouda/jeffrey/releases/download/v$jeffreyVersion/microscope.jar"
 val jeffreyJarDest = layout.projectDirectory.file("src/main/resources/jeffrey/microscope.jar")
 
 group = "me.bechberger"
 description = "A profiler plugin for Java based on JFR and Firefox Profiler"
 
-inner class ProjectInfo {
+class ProjectInfo {
     val longName = "Java Profiler and JFR Profile Viewer"
     val website = "https://github.com/parttimenerd/intellij-profiler-plugin"
     val scm = "git@github.com:parttimenerd/intellij-profiler-plugin.git"
@@ -24,10 +24,10 @@ configurations.all {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "2.1.0"
-    kotlin("plugin.serialization") version "2.1.0"
+    id("org.jetbrains.kotlin.jvm") version "2.4.20"
+    kotlin("plugin.serialization") version "2.4.20"
 
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.11"
 
     `maven-publish`
     application
@@ -41,7 +41,7 @@ plugins {
 }
 
 apply {
-    plugin("com.github.johnrengelman.shadow")
+    plugin("com.gradleup.shadow")
 }
 
 java {
@@ -125,21 +125,21 @@ dependencies {
         zipSigner()
     }
 
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.1.0"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.0")
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.20"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.20")
 
-    implementation("org.junit.jupiter:junit-jupiter:5.10.1")
+    implementation("org.junit.jupiter:junit-jupiter:5.12.2")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.1.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-    implementation("me.bechberger:jfrtofp-server:0.0.8") {
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.4.20")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("me.bechberger:jfrtofp-server:0.0.9") {
         isChanging = true
     }
-    implementation("me.bechberger:jfrtofp:0.0.8") {
+    implementation("me.bechberger:jfrtofp:0.0.9") {
         isChanging = true
     }
-    implementation("me.bechberger:ap-loader-all:4.4-13")
+    implementation("me.bechberger:ap-loader-all:4.5-13")
 }
 
 tasks.test {
@@ -196,7 +196,7 @@ tasks {
     }
 }
 
-tasks.findByName("build")?.dependsOn(tasks.findByName("copyHooks"))
+tasks.findByName("build")?.dependsOn(tasks.findByName("copyHooks") as Any)
 
 publishing {
     repositories {

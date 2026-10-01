@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [0.0.22]
+
+### Changed
+- Update jfrtofp and jfrtofp-server to 0.0.9
+- Update Kotlin to 2.4.20
+- Update ap-loader-all to 4.5-13
+- Update jeffrey to 0.13.32
+
 ## [0.0.21] - 2026-10-01
 
 ### Fixed
