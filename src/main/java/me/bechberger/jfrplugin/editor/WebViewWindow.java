@@ -67,6 +67,10 @@ public class WebViewWindow implements Disposable {
         browser.getCefBrowser().loadURL(url);
     }
 
+    public String getCurrentUrl() {
+        return browser.getCefBrowser().getURL();
+    }
+
     public void reloadWithFirefoxProfiler() {
         browser.getCefBrowser().loadURL(firefoxProfilerUrl);
     }
