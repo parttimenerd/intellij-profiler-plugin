@@ -3,8 +3,8 @@ package me.bechberger.jfrplugin.mcp
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupActivity
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -19,9 +19,8 @@ private const val SERVER_NAME = "intellij-java-profiler"
  * non-Copilot plugin IDs, so we write directly to the config file that Copilot
  * watches at ~/.config/github-copilot/intellij/mcp.json.
  */
-class CopilotMcpJsonRegistrar : ProjectActivity {
-    override suspend fun execute(project: Project) {
-        if (project.isDefault) return
+class CopilotMcpJsonRegistrar : StartupActivity.DumbAware {
+    override fun runActivity(project: Project) {
         register()
     }
 
