@@ -139,6 +139,43 @@ class FirefoxProfilerMcpToolset : McpToolset {
         "Navigated to $fqn"
     }.getOrElse { "Error: ${it.message}" }
 
+    @McpTool
+    @McpDescription(description = "List all run configurations in the project (name and type).")
+    suspend fun profiler_list_run_configurations(
+        @McpDescription(description = "Path to the project directory. Optional if only one project is open.")
+        projectPath: String? = null
+    ): String = runCatching<String> {
+        val project = McpBridge.resolveProject(projectPath)
+            ?: return "Error: no open project found."
+        val configs = McpBridge.listRunConfigurations(project)
+        if (configs.isEmpty()) return "No run configurations found."
+        buildJsonArray {
+            configs.forEach { (name, type) ->
+                add(buildJsonObject {
+                    put("name", name)
+                    put("type", type)
+                })
+            }
+        }.toString()
+    }.getOrElse { "Error: ${it.message}" }
+
+    @McpTool
+    @McpDescription(description = "Run a run configuration (application, test, etc.) with profiling enabled and open the result. Use profiler_list_run_configurations to find available configurations.")
+    suspend fun profiler_run(
+        @McpDescription(description = "Name of the run configuration to execute. Omit to use the currently selected one.")
+        configName: String? = null,
+        @McpDescription(description = "Profiling engine and event. 'jfr' (default) uses JDK Flight Recorder. 'ap' or 'ap:wall' uses async-profiler wall-clock sampling. 'ap:cpu' for CPU time, 'ap:alloc' for allocation profiling, 'ap:ctimer' for CPU timer. Any async-profiler event is accepted as 'ap:<event>'.")
+        engine: String = "jfr",
+        @McpDescription(description = "Path to the project directory. Optional if only one project is open.")
+        projectPath: String? = null
+    ): String = runCatching {
+        val project = McpBridge.resolveProject(projectPath)
+            ?: return "Error: no open project found."
+        McpBridge.runWithProfiling(project, configName, engine)
+        val label = configName ?: "selected configuration"
+        "Started '$label' with ${engine.uppercase()} profiling. The profile will open automatically when the run finishes."
+    }.getOrElse { "Error: ${it.message}" }
+
     private fun buildViewUrl(currentUrl: String, view: String): String {
         val viewParam = "view=$view"
         return when {

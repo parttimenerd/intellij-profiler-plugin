@@ -6,9 +6,13 @@
 
 ### Fixed
 - JFR profiles now open in the embedded Firefox Profiler instead of hitting GitHub Pages (which returned a 404 for deep URLs due to missing SPA routing support)
+- Profile title now shows just the class/test name instead of the full JVM command line (e.g. `CJFREventFieldAccessTest` instead of `com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit5 …`)
+
+### Added
+- MCP tools `profiler_list_run_configurations` and `profiler_run`: AI assistants can now list all run configurations and launch any of them (app, test, Gradle task, …) with JFR or async-profiler profiling — including specific async-profiler event types (`ap:cpu`, `ap:wall`, `ap:alloc`, `ap:ctimer`, …)
 
 ### Changed
-- Update jfrtofp-server to 0.0.12
+- Update jfrtofp-server to 0.0.13 (embeds jfrtofp 0.0.10)
 
 ## [0.0.21]
 

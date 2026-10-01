@@ -5,6 +5,7 @@ import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.openapi.project.Project
 import me.bechberger.jfrplugin.config.jfrFile
 import me.bechberger.jfrplugin.config.profilerConfig
+import me.bechberger.jfrplugin.mcp.McpBridge
 import me.bechberger.jfrplugin.runner.BasePluginRunConfigurationExtension
 import me.bechberger.jfrplugin.util.isAsyncProfilerSupported
 import one.profiler.AsyncProfilerLoader
@@ -27,10 +28,13 @@ class APPluginRunConfigurationExtension : BasePluginRunConfigurationExtension("A
         vmParametersList.add("-XX:+DebugNonSafepoints")
         val asyncProfiler = AsyncProfilerLoader.getAsyncProfilerPath()
         val conf = project.profilerConfig.asyncProfilerConfig
+        // MCP may override the event type for this run
+        val event = McpBridge.apEventOverride.get() ?: conf.event
+        val includeAlloc = conf.alloc && event != "alloc"
         vmParametersList.add(
-            "-agentpath:$asyncProfiler=start,event=${conf.event},loglevel=WARN," +
+            "-agentpath:$asyncProfiler=start,event=$event,loglevel=WARN," +
                     "file=${project.jfrFile}" +
-                    (if (conf.alloc) ",alloc=512k" else "") +
+                    (if (includeAlloc) ",alloc=512k" else "") +
                     "${if (conf.jfrsync) ",jfrsync" else ""}," +
                     "jfr${if (conf.misc.isNotBlank()) ",${conf.misc}" else ""}"
         )

@@ -18,8 +18,9 @@ This plugin supports
 - viewing JFR files with Firefox Profiler or Jeffrey (click frames in Jeffrey's flame graph to jump directly to source)
 - CPU-time profiling via `jdk.CPUTimeSample` (JEP 509) on Java 25+ Linux runtimes
 - flamegraphs, call trees, function tables, marker timelines, allocation profiles, and more
-- MCP toolset for AI assistants (JetBrains AI, GitHub Copilot, Claude Code): open JFR files, start/stop
-  recordings, navigate profiler views, get hot functions, and jump to source — all via MCP tools
+- MCP toolset for AI assistants (JetBrains AI, GitHub Copilot, Claude Code): list and run configurations
+  with profiling, open JFR files, start/stop recordings, navigate profiler views, get hot functions,
+  and jump to source — all via MCP tools
   (requires IntelliJ 2025.2+ with the MCP Server plugin)
 
 This plugin is under active development; feel free to try it and open issues for any bugs or suggestions.
@@ -73,6 +74,8 @@ Claude Code, and others) can call to interact with the profiler:
 
 | Tool | Description |
 |------|-------------|
+| `profiler_list_run_configurations` | List all run configurations in the project |
+| `profiler_run` | Run any configuration (app, test, Gradle task…) with JFR or async-profiler (`ap:cpu`, `ap:wall`, `ap:alloc`, …); opens the result automatically |
 | `profiler_open_jfr` | Open a JFR file in the Firefox Profiler editor |
 | `profiler_start_recording` | Start a JFR recording for a running JVM |
 | `profiler_stop_recording` | Stop the recording and open the result |
