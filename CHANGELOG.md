@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### Fixed
+- JFR profiles now open in the embedded Firefox Profiler instead of hitting GitHub Pages (which returned a 404 for deep URLs due to missing SPA routing support)
+
+### Changed
+- Update jfrtofp-server to 0.0.11
+
 ## [0.0.21]
 
 ### Added
