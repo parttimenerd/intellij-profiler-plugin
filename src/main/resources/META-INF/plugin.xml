@@ -31,9 +31,9 @@
         <projectService serviceImplementation="me.bechberger.jfrplugin.attach.AttachService"/>
 
         <fileType name="JDK Flight Recorder"
-                  extensions="jfr"
+                  extensions="jfr;cjfr"
                   language="JDK Flight Recorder"
-                  patterns="*.jfr"
+                  patterns="*.jfr;*.cjfr"
                   fieldName="INSTANCE"
                   implementationClass="me.bechberger.jfrplugin.lang.JFRFileType"/>
         <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JFRFileEditorProvider"/>
