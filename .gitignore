@@ -16,3 +16,14 @@ test-project/flight.json.gz
 test-project/profile.jfr
 test-project/.idea/workspace.xml
 src/main/resources/jeffrey/microscope.jar
+
+# Local scratch files
+.DS_Store
+.profileconfig.json
+.grazie.en.yaml
+.playwright-mcp/
+abc.txt
+nmcp/
+qodana.yaml
+docs/superpowers/
+test-project/
