@@ -176,6 +176,43 @@ class FirefoxProfilerMcpToolset : McpToolset {
         "Started '$label' with ${engine.uppercase()} profiling. The profile will open automatically when the run finishes."
     }.getOrElse { "Error: ${it.message}" }
 
+    @McpTool
+    @McpDescription(description = "Run 'jfr view <view> <file>' on the currently open JFR file. Returns the tabular output. Use 'hot-methods', 'cpu-load-samples', 'gc', 'exceptions', 'events-by-count', 'threads', 'memory', 'network-utilization', 'jvm-information', 'system-information' etc. Run with view='help' to list all available views.")
+    suspend fun profiler_jfr_view(
+        @McpDescription(description = "View name, e.g. 'hot-methods', 'cpu-load-samples', 'gc', 'exceptions', 'events-by-count'. Use 'help' to list all views.")
+        view: String,
+        @McpDescription(description = "Absolute path to the JFR file. Omit to use the currently open file.")
+        path: String? = null,
+        @McpDescription(description = "Path to the project directory. Optional if only one project is open.")
+        projectPath: String? = null
+    ): String = runCatching<String> {
+        val project = McpBridge.resolveProject(projectPath)
+        if (view == "help") {
+            return McpBridge.runJfrCli(project, "view", "--help")
+        }
+        val filePath = path
+            ?: (project?.let { McpBridge.currentFilePath(it) })
+            ?: return "Error: no JFR file path given and no file is currently open."
+        McpBridge.runJfrCli(project, "view", "--width", "120", view, filePath)
+    }.getOrElse { "Error: ${it.message}" }
+
+    @McpTool
+    @McpDescription(description = "Run 'jfr print --events <filter> <file>' on the currently open JFR file. Returns raw event text. Useful for inspecting specific event types.")
+    suspend fun profiler_jfr_print(
+        @McpDescription(description = "Comma-separated event filter, e.g. 'jdk.GCPause', 'jdk.Compilation', '*Exception*'. Use '*' for all events.")
+        events: String,
+        @McpDescription(description = "Absolute path to the JFR file. Omit to use the currently open file.")
+        path: String? = null,
+        @McpDescription(description = "Path to the project directory. Optional if only one project is open.")
+        projectPath: String? = null
+    ): String = runCatching<String> {
+        val project = McpBridge.resolveProject(projectPath)
+        val filePath = path
+            ?: (project?.let { McpBridge.currentFilePath(it) })
+            ?: return "Error: no JFR file path given and no file is currently open."
+        McpBridge.runJfrCli(project, "print", "--events", events, filePath)
+    }.getOrElse { "Error: ${it.message}" }
+
     private fun buildViewUrl(currentUrl: String, view: String): String {
         val viewParam = "view=$view"
         return when {

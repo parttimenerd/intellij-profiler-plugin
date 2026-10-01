@@ -20,7 +20,7 @@ This plugin supports
 - flamegraphs, call trees, function tables, marker timelines, allocation profiles, and more
 - MCP toolset for AI assistants (JetBrains AI, GitHub Copilot, Claude Code): list and run configurations
   with profiling, open JFR files, start/stop recordings, navigate profiler views, get hot functions,
-  and jump to source — all via MCP tools
+  run `jfr view`/`jfr print` for tabular analysis, and jump to source — all via MCP tools
   (requires IntelliJ 2025.2+ with the MCP Server plugin)
 
 This plugin is under active development; feel free to try it and open issues for any bugs or suggestions.
@@ -83,6 +83,8 @@ Claude Code, and others) can call to interact with the profiler:
 | `profiler_get_status` | Report what is currently open and recording state |
 | `profiler_get_hot_functions` | Return the top N hottest functions from the open profile |
 | `profiler_open_function` | Jump to a function's source in the IDE |
+| `profiler_jfr_view` | Run `jfr view <view> <file>` — tabular summaries: `hot-methods`, `gc`, `exceptions`, … Use `view=help` to list all views |
+| `profiler_jfr_print` | Run `jfr print --events <filter> <file>` — raw event output for specific event types |
 
 Requirements: IntelliJ IDEA 2025.2+ with the **MCP Server** plugin installed.
 The plugin continues to work normally without it — MCP tools are simply unavailable.

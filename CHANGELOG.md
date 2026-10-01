@@ -10,6 +10,7 @@
 
 ### Added
 - MCP tools `profiler_list_run_configurations` and `profiler_run`: AI assistants can now list all run configurations and launch any of them (app, test, Gradle task, …) with JFR or async-profiler profiling — including specific async-profiler event types (`ap:cpu`, `ap:wall`, `ap:alloc`, `ap:ctimer`, …)
+- MCP tools `profiler_jfr_view` and `profiler_jfr_print`: run the JDK `jfr` CLI on the currently open file to get tabular summaries (`hot-methods`, `gc`, `exceptions`, …) or raw event output; `view=help` lists all available views
 
 ### Changed
 - Update jfrtofp-server to 0.0.13 (embeds jfrtofp 0.0.10)

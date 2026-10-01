@@ -8,6 +8,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import me.bechberger.jfrtofp.server.Server
 import me.bechberger.jfrplugin.attach.AttachService
@@ -115,5 +116,41 @@ object McpBridge {
                 apEventOverride.remove()
             }
         }
+    }
+
+    /**
+     * Finds the `jfr` CLI binary. Search order:
+     *   1. Project SDK (most likely to match the JFR file format)
+     *   2. JAVA_HOME env var
+     *   3. `jfr` on PATH
+     * Returns null if not found.
+     */
+    fun findJfrCli(project: Project?): Path? {
+        val candidates = mutableListOf<Path>()
+        if (project != null) {
+            ProjectRootManager.getInstance(project).projectSdk?.homePath
+                ?.let { candidates.add(Path.of(it, "bin", "jfr")) }
+        }
+        System.getenv("JAVA_HOME")?.let { candidates.add(Path.of(it, "bin", "jfr")) }
+        runCatching {
+            ProcessBuilder("which", "jfr").start().inputStream.bufferedReader().readLine()
+        }.getOrNull()?.let { candidates.add(Path.of(it)) }
+        return candidates.firstOrNull { it.toFile().canExecute() }
+    }
+
+    /**
+     * Runs `jfr <args>` and returns stdout (truncated to [maxChars]).
+     * Throws if the binary is not found or the command fails.
+     */
+    fun runJfrCli(project: Project?, vararg args: String, maxChars: Int = 8000): String {
+        val jfr = findJfrCli(project) ?: error("jfr CLI not found. Ensure JDK 9+ is on PATH or set JAVA_HOME.")
+        val proc = ProcessBuilder(listOf(jfr.toString()) + args.toList())
+            .redirectErrorStream(true)
+            .start()
+        val output = proc.inputStream.bufferedReader().readText()
+        val exit = proc.waitFor()
+        val result = if (output.length > maxChars) output.take(maxChars) + "\n[truncated]" else output
+        if (exit != 0) error("jfr exited with code $exit:\n$result")
+        return result
     }
 }
