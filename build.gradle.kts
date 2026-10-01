@@ -64,7 +64,8 @@ repositories {
         url = uri("https://maven.pkg.github.com/parttimenerd/jfrtofp-server")
         credentials {
             username = providers.environmentVariable("GITHUB_ACTOR").orNull ?: "token"
-            password = providers.environmentVariable("GITHUB_TOKEN").orNull
+            password = providers.environmentVariable("GPR_TOKEN").orNull
+                ?: providers.environmentVariable("GITHUB_TOKEN").orNull
                 ?: providers.gradleProperty("gpr.key").orNull ?: ""
         }
     }
