@@ -130,6 +130,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.20")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.4.20")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
