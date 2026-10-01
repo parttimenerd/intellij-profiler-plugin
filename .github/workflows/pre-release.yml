@@ -47,6 +47,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
 
       - name: Build Plugin (full, with Jeffrey)
         if: steps.check_version.outputs.skip == 'false'
