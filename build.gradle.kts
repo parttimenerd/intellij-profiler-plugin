@@ -118,21 +118,6 @@ qodana {
     resultsPath.set(projectDir.resolve("build/results/qodana").canonicalPath)
 }
 
-// Compile-time stubs for the Copilot MCP API so CopilotMcpServerProvider.kt
-// compiles without requiring the Copilot plugin on the classpath.
-// The stubs are NOT shipped in the plugin JAR; at runtime the real Copilot
-// classes take over when the plugin is installed.
-val copilotStubs: SourceSet by sourceSets.creating {
-    kotlin.srcDir("src/copilotStubs/kotlin")
-}
-configurations[copilotStubs.compileClasspathConfigurationName].extendsFrom(
-    configurations["intellijPlatformDependencies"]
-)
-dependencies {
-    "compileOnly"(copilotStubs.output)
-    "copilotStubsCompileOnly"(kotlin("stdlib"))
-}
-
 dependencies {
     intellijPlatform {
         intellijIdeaCommunity(properties("platformVersion"))

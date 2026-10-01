@@ -1,6 +1,6 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="com.github.copilot.api.mcp">
-    <mcpServerProvider
-        implementation="me.bechberger.jfrplugin.mcp.CopilotMcpServerProvider"/>
+  <extensions defaultExtensionNs="com.intellij">
+    <postStartupActivity
+        implementation="me.bechberger.jfrplugin.mcp.CopilotMcpJsonRegistrar"/>
   </extensions>
 </idea-plugin>
