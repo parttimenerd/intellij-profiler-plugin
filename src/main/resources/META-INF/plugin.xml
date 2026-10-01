@@ -17,6 +17,7 @@
     -->
     <depends>com.intellij.modules.java</depends>
     <depends optional="true" config-file="mcp.xml">com.intellij.mcpServer</depends>
+    <depends optional="true" config-file="copilot.xml">com.github.copilot</depends>
 
     <extensions defaultExtensionNs="com.intellij">
 
