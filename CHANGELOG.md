@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+## [0.0.23]
+
+### Added
+- MCP toolset for JetBrains AI, GitHub Copilot, and Claude Code: open JFR files, start/stop profiling, navigate Firefox Profiler views, get hot functions, and navigate to source — all via MCP tools. Requires IntelliJ 2025.2+ with the MCP Server plugin; the plugin continues to work normally without it.
+
+### Fixed
+- JUnit JARs no longer bundled in plugin (were pulled in transitively via jfrtofp-server)
+
+### Changed
+- Update jfrtofp-server to 0.0.10
+- Target IntelliJ 2025.2.5 platform (was 2025.1.2)
+
 ## [0.0.22]
 
 ### Changed
