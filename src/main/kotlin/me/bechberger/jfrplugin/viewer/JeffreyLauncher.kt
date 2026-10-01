@@ -146,6 +146,13 @@ object JeffreyLauncher {
 
     fun isRunning(): Boolean = process?.isAlive == true
 
+    /** Returns true if the bundled Jeffrey jar is present in plugin resources. */
+    fun isJarAvailable(): Boolean =
+        JeffreyLauncher::class.java.getResource("/jeffrey/microscope.jar") != null
+
+    /** Returns true if Jeffrey is fully available: jar bundled AND a suitable JDK found. */
+    fun isAvailable(): Boolean = isJarAvailable() && isJdkAvailable()
+
     /** Returns true if a suitable JDK for Jeffrey is available on this machine. */
     fun isJdkAvailable(): Boolean = findJava() != null
 

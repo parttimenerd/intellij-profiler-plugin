@@ -169,9 +169,12 @@ tasks.register<Copy>("copyHooks") {
     into(".git/hooks")
 }
 
+val includeJeffrey = project.findProperty("includeJeffrey")?.toString()?.toBoolean() ?: true
+
 tasks.register("downloadJeffrey") {
     description = "Downloads the Jeffrey microscope.jar viewer (v$jeffreyVersion) into src/main/resources/jeffrey/"
     onlyIf {
+        if (!includeJeffrey) return@onlyIf false
         val dest = jeffreyJarDest.asFile
         !dest.exists() || (System.currentTimeMillis() - dest.lastModified() > 86_400_000L)
     }
@@ -185,8 +188,11 @@ tasks.register("downloadJeffrey") {
     }
 }
 
-tasks.named("processResources") {
+tasks.named<ProcessResources>("processResources") {
     dependsOn("downloadJeffrey")
+    if (!includeJeffrey) {
+        exclude("jeffrey/**")
+    }
 }
 
 tasks {

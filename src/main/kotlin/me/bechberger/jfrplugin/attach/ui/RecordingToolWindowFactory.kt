@@ -244,7 +244,7 @@ private class ActionsCellRenderer(
 
     private fun buildPanel(pid: String, state: RecordingState, jfrExists: Boolean): JPanel {
         val panel = JPanel(java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 3, 2)).apply { isOpaque = true }
-        val jeffreyAvailable = JeffreyLauncher.isJdkAvailable()
+        val jeffreyAvailable = JeffreyLauncher.isAvailable()
 
         if (state is RecordingState.Idle) {
             panel.add(btn("JFR") { doStart(pid, Engine.JFR) })

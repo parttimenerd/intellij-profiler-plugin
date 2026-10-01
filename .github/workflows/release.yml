@@ -22,6 +22,9 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_ACTOR: ${{ github.actor }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -59,42 +62,30 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            # Always force-create/move the tag to the current commit and force-push
             git tag -f v${{ steps.get_version.outputs.pluginVersion }}
             git push origin -f v${{ steps.get_version.outputs.pluginVersion }}
           else
-            # Only create the tag if it doesn't exist
             if [ "${{ steps.check_tag.outputs.exists }}" = "false" ]; then
               git tag v${{ steps.get_version.outputs.pluginVersion }}
               git push origin v${{ steps.get_version.outputs.pluginVersion }}
             fi
           fi
 
-      # Build the plugin and prepare the artifact for the next steps
-      - name: Build Plugin
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
-        run: |
-          ./gradlew build
-          ./gradlew buildPlugin
+      - name: Build Plugin (full, with Jeffrey)
+        run: ./gradlew buildPlugin -PincludeJeffrey=true
 
-      # Prepare plugin archive content for creating artifact
-      - name: Prepare Plugin Artifact
-        id: artifact
-        shell: bash
+      - name: Rename full ZIP
         run: |
-          cd ${{ github.workspace }}/build/libs
-          FILENAME="Java JFR Profiler-all.jar"
-          unzip "$FILENAME" -d content
-          echo "filename=${FILENAME:0:-4}" >> $GITHUB_OUTPUT
+          cd build/distributions
+          for f in *.zip; do mv "$f" "${f%.zip}-full.zip"; done
 
-      - name: Find distribution zip
-        id: dist
-        shell: bash
+      - name: Build Plugin (slim, without Jeffrey)
+        run: ./gradlew buildPlugin -PincludeJeffrey=false
+
+      - name: Rename slim ZIP
         run: |
-          ZIP=$(ls "${{ github.workspace }}/build/distributions/"*.zip | head -1)
-          echo "path=$ZIP" >> $GITHUB_OUTPUT
+          cd build/distributions
+          for f in *.zip; do [[ "$f" != *-full.zip ]] && mv "$f" "${f%.zip}-slim.zip"; done
 
       - name: Extract changelog for this version
         id: changelog
@@ -125,13 +116,16 @@ jobs:
           tag_name: v${{ steps.get_version.outputs.pluginVersion }}
           name: Release v${{ steps.get_version.outputs.pluginVersion }}
           body: |
-            Install the plugin from the JetBrains Marketplace or download the JAR file from this release page and
-            use the "Install Plugin from Disk" action in your IDE.
-            
+            Install the plugin from the JetBrains Marketplace or download a ZIP from this release page and
+            use "Install Plugin from Disk" in your IDE settings.
+
+            Two variants:
+            - **-full.zip**: includes the Jeffrey profiler viewer (requires JDK 25+ to use Jeffrey features)
+            - **-slim.zip**: without Jeffrey (~145 MB smaller)
+
             ${{ steps.changelog.outputs.changelog }}
           files: |
             LICENSE
-            ${{ steps.dist.outputs.path }}
-            ./build/libs/Java\ JFR Profiler-all.jar
+            build/distributions/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

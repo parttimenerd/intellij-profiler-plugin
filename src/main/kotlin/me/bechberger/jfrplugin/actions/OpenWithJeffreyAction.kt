@@ -18,7 +18,7 @@ class OpenWithJeffreyAction : AnAction("Open with Jeffrey") {
     override fun update(e: AnActionEvent) {
         val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: emptyArray()
         e.presentation.isEnabledAndVisible =
-            JeffreyLauncher.isJdkAvailable() && collectJfrFiles(files).isNotEmpty()
+            JeffreyLauncher.isAvailable() && collectJfrFiles(files).isNotEmpty()
     }
 
     override fun actionPerformed(e: AnActionEvent) {

@@ -57,7 +57,7 @@ object McpBridge {
 
     fun attachService(project: Project): AttachService = AttachService.getInstance(project)
 
-    fun isJeffreyAvailable(): Boolean = JeffreyLauncher.isJdkAvailable()
+    fun isJeffreyAvailable(): Boolean = JeffreyLauncher.isAvailable()
 
     fun isServerRunning(project: Project): Boolean = currentUrl(project) != null
 }

@@ -13,7 +13,7 @@ class JeffreyFileEditorProvider : FileEditorProvider, DumbAware {
     override fun getEditorTypeId() = "Jeffrey Profile"
 
     override fun accept(project: Project, file: VirtualFile): Boolean =
-        file.fileType == JFRFileType && JeffreyLauncher.isJdkAvailable()
+        file.fileType == JFRFileType && JeffreyLauncher.isAvailable()
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor =
         JeffreyFileEditor(project, file)
