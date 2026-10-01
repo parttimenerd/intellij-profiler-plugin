@@ -10,7 +10,7 @@ interface McpServerProvider {
 }
 
 interface ExtInstalledMcpServerConfiguration {
-    val configurationItems: List<ExtInstalledMcpServerConfigurationItem>? get() = null
+    val configurationItems: List<ExtInstalledMcpServerConfigurationItem>
 }
 
 interface ExtInstalledMcpServerConfigurationItem {

@@ -8,7 +8,9 @@ import com.intellij.mcpserver.impl.McpServerService
 class CopilotMcpServerProvider : McpServerProvider {
     override suspend fun getConfigs(): ExtInstalledMcpServerConfiguration {
         val service = McpServerService.Companion.getInstance()
-        if (!service.isRunning) return object : ExtInstalledMcpServerConfiguration {}
+        if (!service.isRunning) return object : ExtInstalledMcpServerConfiguration {
+            override val configurationItems = emptyList<ExtInstalledMcpServerConfigurationItem>()
+        }
         val sseUrl = "http://localhost:${service.port}/sse"
         return object : ExtInstalledMcpServerConfiguration {
             override val configurationItems = listOf(
