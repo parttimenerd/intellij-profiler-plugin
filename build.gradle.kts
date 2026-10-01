@@ -146,6 +146,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    dependsOn("prepareSandbox")
 }
 
 application {
