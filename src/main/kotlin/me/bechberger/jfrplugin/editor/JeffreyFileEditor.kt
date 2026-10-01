@@ -26,7 +26,7 @@ class JeffreyFileEditor(private val project: Project, private val virtualFile: V
                 javax.swing.SwingUtilities.invokeLater {
                     val parent = placeholder.parent
                     if (parent != null) {
-                        val idx = (parent as? java.awt.Container)?.components?.indexOf(placeholder) ?: -1
+                        val idx = parent.components?.indexOf(placeholder) ?: -1
                         parent.remove(placeholder)
                         parent.add(browser.component)
                         parent.revalidate()
