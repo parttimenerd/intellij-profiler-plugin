@@ -4,36 +4,23 @@
 
 ## [Unreleased]
 
-## [0.0.23]
+## [0.0.21]
 
 ### Added
 - MCP toolset for JetBrains AI, GitHub Copilot, and Claude Code: open JFR files, start/stop profiling, navigate Firefox Profiler views, get hot functions, and navigate to source — all via MCP tools. Requires IntelliJ 2025.2+ with the MCP Server plugin; the plugin continues to work normally without it.
-
-### Fixed
-- JUnit JARs no longer bundled in plugin (were pulled in transitively via jfrtofp-server)
-
-### Changed
-- Update jfrtofp-server to 0.0.10
-- Target IntelliJ 2025.2.5 platform (was 2025.1.2)
-
-## [0.0.22]
-
-### Changed
-- Update jfrtofp and jfrtofp-server to 0.0.9
-- Update Kotlin to 2.4.20
-- Update ap-loader-all to 4.5-13
-- Update jeffrey to 0.13.32
-
-## [0.0.21] - 2026-10-01
+- CI test that loads all plugin-bundled JARs into an isolated classloader and verifies required runtime classes (Javalin, Jetty, Jackson) are present, preventing future missing-dependency regressions
 
 ### Fixed
 - Opening a JFR file crashed with `NoClassDefFoundError: io/javalin/core/util/JavalinException` because Javalin, Jetty, and Jackson transitive dependencies of jfrtofp-server were missing from the plugin bundle ([#38](https://github.com/parttimenerd/intellij-profiler-plugin/issues/38))
+- JUnit JARs no longer bundled in plugin (were pulled in transitively via jfrtofp-server)
 
 ### Changed
-- Update jfrtofp-server to 0.0.8 (Javalin 4.6.7 → 7.2.3, Jetty 9 → 12)
-
-### Added
-- CI test that loads all plugin-bundled JARs into an isolated classloader and verifies required runtime classes (Javalin, Jetty, Jackson) are present, preventing future missing-dependency regressions
+- Update jfrtofp-server to 0.0.10 (Javalin 4.6.7 → 7.2.3, Jetty 9 → 12)
+- Update jfrtofp to 0.0.9
+- Update Kotlin to 2.4.20
+- Update ap-loader-all to 4.5-13
+- Update jeffrey to 0.13.32
+- Target IntelliJ 2025.2.5 platform (was 2025.1.2)
 
 ## [0.0.20] - 2026-07-17
 
