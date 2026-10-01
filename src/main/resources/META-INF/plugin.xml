@@ -48,6 +48,8 @@
                   implementationClass="me.bechberger.jfrplugin.lang.JsonGzFileType"/>
         <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JsonGzFileEditorProvider"/>
 
+        <postStartupActivity implementation="me.bechberger.jfrplugin.mcp.CopilotMcpJsonRegistrar"/>
+
         <runConfigurationExtension implementation="me.bechberger.jfrplugin.runner.jfr.JFRPluginRunConfigurationExtension"/>
         <programRunner implementation="me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner"/>
         <executor implementation="me.bechberger.jfrplugin.runner.jfr.JFRExecutor"/>

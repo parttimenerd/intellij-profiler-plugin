@@ -1,6 +1,2 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
-    <postStartupActivity
-        implementation="me.bechberger.jfrplugin.mcp.CopilotMcpJsonRegistrar"/>
-  </extensions>
 </idea-plugin>

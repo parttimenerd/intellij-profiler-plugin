@@ -1,15 +1,11 @@
 package me.bechberger.jfrplugin.mcp
 
-import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.mcpserver.impl.McpServerService
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.project.Project
 import java.nio.file.Path
-import java.nio.file.StandardWatchEventKinds
 import kotlin.io.path.*
 
 private val LOG = logger<CopilotMcpJsonRegistrar>()
@@ -19,47 +15,56 @@ private const val SERVER_NAME = "intellij-java-profiler"
 /**
  * Writes/removes our SSE entry in Copilot's mcp.json on IDE startup/shutdown.
  *
- * The McpServerProvider extension point in Copilot 1.16 only accepts providers
- * from com.github.copilot and com.github.copilot.appmod plugin IDs, so we
- * write directly to the config file that Copilot watches.
+ * Copilot's McpServerProvider extension point (1.16+) rejects providers from
+ * non-Copilot plugin IDs, so we write directly to the config file that Copilot
+ * watches at ~/.config/github-copilot/intellij/mcp.json.
  */
 class CopilotMcpJsonRegistrar : ProjectActivity {
     override suspend fun execute(project: Project) {
-        // Only register once across all open projects
-        if (!project.isDefault && ApplicationManager.getApplication().isUnitTestMode.not()) {
-            register()
-        }
+        if (project.isDefault) return
+        register()
     }
 
     companion object {
-        private var registered = false
+        @Volatile private var registered = false
 
         fun register() {
             if (registered) return
-            registered = true
-
-            val service = try {
-                McpServerService.Companion.getInstance()
-            } catch (_: Exception) {
-                return
+            synchronized(this) {
+                if (registered) return
+                registered = true
             }
 
-            if (!service.isRunning) {
-                // Wait briefly for the MCP server to start, then register
+            val port = getMcpPort()
+            if (port != null) {
+                writeEntry(port)
+                installShutdownHook()
+            } else {
+                // MCP server not running yet — poll for up to 15s
                 Thread {
-                    repeat(10) {
+                    repeat(15) {
                         Thread.sleep(1000)
-                        if (service.isRunning) {
-                            writeEntry(service.port)
+                        val p = getMcpPort()
+                        if (p != null) {
+                            writeEntry(p)
                             installShutdownHook()
                             return@Thread
                         }
                     }
+                    LOG.info("MCP server not available after 15s, skipping Copilot mcp.json registration")
                 }.also { it.isDaemon = true }.start()
-            } else {
-                writeEntry(service.port)
-                installShutdownHook()
             }
+        }
+
+        private fun getMcpPort(): Int? = try {
+            val serviceClass = Class.forName("com.intellij.mcpserver.impl.McpServerService")
+            val companion = serviceClass.getField("Companion").get(null)
+            val getInstance = companion.javaClass.getMethod("getInstance")
+            val service = getInstance.invoke(companion)
+            val isRunning = service.javaClass.getMethod("isRunning").invoke(service) as Boolean
+            if (isRunning) service.javaClass.getMethod("getPort").invoke(service) as Int else null
+        } catch (_: Exception) {
+            null
         }
 
         private fun installShutdownHook() {
@@ -73,25 +78,26 @@ class CopilotMcpJsonRegistrar : ProjectActivity {
             }
         }
 
-        private fun mcpJsonPath(): Path? {
+        private fun mcpJsonPath(): Path {
             val os = System.getProperty("os.name", "").lowercase()
             val base = when {
-                os.contains("mac") -> Path(System.getProperty("user.home"), ".config")
-                os.contains("win") -> Path(System.getenv("APPDATA") ?: return null)
+                os.contains("win") -> Path(System.getenv("APPDATA") ?: System.getProperty("user.home"))
                 else -> Path(System.getProperty("user.home"), ".config")
             }
             return base.resolve("github-copilot/intellij/mcp.json")
         }
 
         fun writeEntry(port: Int) {
-            val path = mcpJsonPath() ?: return
+            val path = mcpJsonPath()
             try {
                 path.parent.createDirectories()
                 val content = if (path.exists()) path.readText() else defaultConfig()
                 val updated = upsertServer(content, port)
                 if (updated != content) {
                     path.writeText(updated)
-                    LOG.info("Registered $SERVER_NAME in ${path}")
+                    LOG.info("Registered $SERVER_NAME (port $port) in $path")
+                } else {
+                    LOG.info("$SERVER_NAME already up-to-date in $path")
                 }
             } catch (e: Exception) {
                 LOG.warn("Failed to write Copilot mcp.json entry", e)
@@ -99,14 +105,14 @@ class CopilotMcpJsonRegistrar : ProjectActivity {
         }
 
         fun removeEntry() {
-            val path = mcpJsonPath() ?: return
+            val path = mcpJsonPath()
             try {
                 if (!path.exists()) return
                 val content = path.readText()
                 val updated = removeServer(content)
                 if (updated != content) {
                     path.writeText(updated)
-                    LOG.info("Removed $SERVER_NAME from ${path}")
+                    LOG.info("Removed $SERVER_NAME from $path")
                 }
             } catch (e: Exception) {
                 LOG.warn("Failed to remove Copilot mcp.json entry", e)
@@ -118,33 +124,25 @@ class CopilotMcpJsonRegistrar : ProjectActivity {
             val entry = serverEntry(port)
 
             // If our block already exists, replace it (port may have changed)
-            val existingPattern = Regex(
-                """(?m)(\s*)"$SERVER_NAME"\s*:\s*\{[^}]*\}\s*,?\s*\n?"""
-            )
+            val existingPattern = Regex("""(?m)(\s*)"$SERVER_NAME"\s*:\s*\{[^}]*\}\s*,?\s*\n?""")
             if (existingPattern.containsMatchIn(content)) {
                 return existingPattern.replace(content) { mr ->
-                    val indent = mr.groupValues[1]
-                    "$indent$entry,\n"
+                    "${mr.groupValues[1]}$entry,\n"
                 }
             }
 
             // Otherwise inject before the closing } of "servers"
-            // Find the last } that closes the servers block
             val serversBlockClose = findServersClosingBrace(content) ?: return content
-            val indent = "        " // 8 spaces, matching Copilot's default style
             return content.substring(0, serversBlockClose) +
-                "$indent$entry,\n    " +
+                "        $entry,\n    " +
                 content.substring(serversBlockClose)
         }
 
         /** Remove our server block from the servers object. */
-        internal fun removeServer(content: String): String {
-            val pattern = Regex(
-                """(?m)\s*"$SERVER_NAME"\s*:\s*\{[^}]*\}\s*,?\s*\n?"""
-            )
-            return pattern.replace(content, "\n")
-                .replace(Regex("\n{3,}"), "\n\n") // collapse extra blank lines
-        }
+        internal fun removeServer(content: String): String =
+            Regex("""(?m)\s*"$SERVER_NAME"\s*:\s*\{[^}]*\}\s*,?\s*\n?""")
+                .replace(content, "\n")
+                .replace(Regex("\n{3,}"), "\n\n")
 
         private fun serverEntry(port: Int): String =
             """"$SERVER_NAME": {"url": "http://localhost:$port/sse"}"""
@@ -155,7 +153,6 @@ class CopilotMcpJsonRegistrar : ProjectActivity {
 }"""
 
         private fun findServersClosingBrace(content: String): Int? {
-            // Find "servers": { and then locate its matching }
             val serversKeyIdx = content.indexOf("\"servers\"")
             if (serversKeyIdx < 0) return null
             val openBrace = content.indexOf('{', serversKeyIdx + 9)
@@ -169,12 +166,9 @@ class CopilotMcpJsonRegistrar : ProjectActivity {
                 val c = content[i]
                 when {
                     inLineComment -> if (c == '\n') inLineComment = false
-                    // Only treat // as comment when not inside a string
                     !inString && c == '/' && i + 1 < content.length && content[i + 1] == '/' -> inLineComment = true
                     c == '"' && !inLineComment -> {
-                        // handle escaped quotes
                         if (inString) {
-                            // count backslashes before this quote
                             var backslashes = 0
                             var j = i - 1
                             while (j >= 0 && content[j] == '\\') { backslashes++; j-- }
