@@ -73,12 +73,12 @@ jobs:
 
       - name: Publish Pre-Release
         if: steps.check_version.outputs.skip == 'false'
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          tag_name: "latest"
           prerelease: true
-          title: "Development Build ${{ steps.get_version.outputs.pluginVersion }}"
+          name: "Development Build ${{ steps.get_version.outputs.pluginVersion }}"
           body: |
             Development build of version ${{ steps.get_version.outputs.pluginVersion }}.
 
