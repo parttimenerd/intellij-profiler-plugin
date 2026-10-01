@@ -148,7 +148,3 @@ class FirefoxProfilerMcpToolset : McpToolset {
         }
     }
 }
-
-private object HotFunctionExtractor {
-    fun extract(path: java.nio.file.Path, n: Int): String = "[]"
-}
