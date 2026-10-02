@@ -1,10 +1,14 @@
 package me.bechberger.jfrplugin.viewer
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.application.PathManager
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import me.bechberger.condensed.CondensedInputStream
+import me.bechberger.jfr.BasicJFRReader
+import me.bechberger.jfr.WritingJFRReader
 import java.io.IOException
 import java.net.ServerSocket
 import java.nio.file.Files
@@ -34,22 +38,45 @@ object JeffreyLauncher {
      * Starts Jeffrey (or reuses a running instance) and returns a URL for the given files.
      * Single file: uses the `/quick-open?path=` deep link (Jeffrey imports + analyzes itself).
      * Multiple files: imports each via `/from-path`, then returns the recordings list.
+     * .cjfr files are inflated to a temp .jfr before being passed to Jeffrey.
      */
     fun startOrReuseAndGetUrlForFiles(jfrFiles: List<Path>, project: Project): String? {
         if (jfrFiles.isEmpty()) return null
         if (!isRunning()) {
             if (!startAndGetUrl(project)) return null
         }
+        val resolvedFiles = jfrFiles.map { file ->
+            if (file.fileName.toString().endsWith(".cjfr")) inflateCjfrToTemp(file) ?: return null
+            else file
+        }
         val base = "http://localhost:$currentPort"
-        if (jfrFiles.size == 1) {
-            val encoded = java.net.URLEncoder.encode(jfrFiles.first().toAbsolutePath().toString(), "UTF-8")
+        if (resolvedFiles.size == 1) {
+            val encoded = java.net.URLEncoder.encode(resolvedFiles.first().toAbsolutePath().toString(), "UTF-8")
             return "$base/quick-open?path=$encoded"
         }
         // Multiple files: import each by path (no file bytes sent over HTTP)
-        jfrFiles.forEach { file ->
+        resolvedFiles.forEach { file ->
             importFromPath(file)
         }
         return "$base/recordings"
+    }
+
+    /**
+     * Inflates a .cjfr file to a temporary .jfr file and returns its path.
+     * Returns null if inflation fails.
+     */
+    private fun inflateCjfrToTemp(cjfrFile: Path): Path? {
+        return try {
+            val temp = Files.createTempFile("jeffrey-inflate-", ".jfr")
+            temp.toFile().deleteOnExit()
+            val reader = BasicJFRReader(CondensedInputStream(Files.newInputStream(cjfrFile)))
+            WritingJFRReader.toJFRFile(reader, temp)
+            LOG.info("Inflated ${cjfrFile.fileName} → ${temp.fileName}")
+            temp
+        } catch (e: Exception) {
+            LOG.warning("Failed to inflate ${cjfrFile.fileName}: ${e.message}")
+            null
+        }
     }
 
     /** Tells Jeffrey to import a JFR file from its local path. Returns the recordingId or null. */
@@ -88,6 +115,7 @@ object JeffreyLauncher {
 
     private fun startAndGetUrl(project: Project): Boolean {
         stop()
+        killStaleMicroscopeProcesses()
 
         val jar = extractJar() ?: run {
             LOG.warning("microscope.jar not bundled — Jeffrey viewer unavailable")
@@ -144,6 +172,27 @@ object JeffreyLauncher {
         currentPort = -1
     }
 
+    /**
+     * Kills any stale microscope.jar processes left over from a previous IDE session.
+     * Jeffrey uses DuckDB which allows only one writer — a leftover process causes
+     * "Conflicting lock" on jeffrey-data.db and immediate startup failure.
+     */
+    private fun killStaleMicroscopeProcesses() {
+        try {
+            ProcessHandle.allProcesses()
+                .filter { ph ->
+                    val cmd = ph.info().command().orElse("")
+                    val args = ph.info().arguments().map { it.toList() }.orElse(emptyList())
+                    cmd.endsWith("java") && args.any { it.endsWith("microscope.jar") }
+                }
+                .filter { ph -> ph.pid() != ProcessHandle.current().pid() }
+                .forEach { ph ->
+                    LOG.info("Killing stale Jeffrey process PID ${ph.pid()}")
+                    ph.destroyForcibly()
+                }
+        } catch (_: Exception) {}
+    }
+
     fun isRunning(): Boolean = process?.isAlive == true
 
     /** Returns true if the bundled Jeffrey jar is present in plugin resources. */
@@ -192,6 +241,17 @@ object JeffreyLauncher {
      */
     private fun findJava(): String? {
         val candidates = mutableListOf<Path>()
+
+        // 0. IDE's own bundled JBR (highest priority — always present, version known)
+        runCatching { PathManager.getHomePath() }.getOrNull()?.let { home ->
+            candidates.add(Path.of(home, "jbr/Contents/Home/bin/java"))  // macOS
+            candidates.add(Path.of(home, "jbr/bin/java"))                // Linux/Windows
+        }
+
+        // 0b. Current JVM process (IDE runtime — same JDK that runs IntelliJ)
+        runCatching {
+            ProcessHandle.current().info().command().orElse(null)
+        }.getOrNull()?.let { candidates.add(Path.of(it)) }
 
         // 1. JAVA_HOME
         System.getenv("JAVA_HOME")?.let { candidates.add(Path.of(it, "bin", "java")) }

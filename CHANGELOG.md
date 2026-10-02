@@ -4,13 +4,20 @@
 
 ## [Unreleased]
 
-### Fixed
-- JFR profiles now open in the embedded Firefox Profiler instead of hitting GitHub Pages (which returned a 404 for deep URLs due to missing SPA routing support)
-- Profile title now shows just the class/test name instead of the full JVM command line (e.g. `CJFREventFieldAccessTest` instead of `com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit5 …`)
+## [0.0.22]
 
 ### Added
 - MCP tools `profiler_list_run_configurations` and `profiler_run`: AI assistants can now list all run configurations and launch any of them (app, test, Gradle task, …) with JFR or async-profiler profiling — including specific async-profiler event types (`ap:cpu`, `ap:wall`, `ap:alloc`, `ap:ctimer`, …)
 - MCP tools `profiler_jfr_view` and `profiler_jfr_print`: run the JDK `jfr` CLI on the currently open file to get tabular summaries (`hot-methods`, `gc`, `exceptions`, …) or raw event output; `view=help` lists all available views
+- Support for `.cjfr` (condensed JFR) files in both the Firefox Profiler and Jeffrey viewers
+
+### Fixed
+- JFR profiles now open in the embedded Firefox Profiler instead of hitting GitHub Pages (which returned a 404 for deep URLs due to missing SPA routing support)
+- Profile title now shows just the class/test name instead of the full JVM command line (e.g. `CJFREventFieldAccessTest` instead of `com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit5 …`)
+- Firefox Profiler tab is now shown first (primary) when opening a JFR file
+- Jeffrey viewer tab now uses a stable `JPanel` wrapper so the browser renders correctly
+- Copilot `mcp.json` registration now uses a JSON library instead of regex, preventing malformed JSON that caused Copilot to silently ignore the server entry
+- MCP server startup now calls `start()` directly instead of the Kotlin-mangled `settingsChanged` method
 
 ### Changed
 - Update jfrtofp-server to 0.0.13 (embeds jfrtofp 0.0.10)

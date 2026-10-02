@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
+import kotlinx.serialization.json.*
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -21,6 +22,14 @@ private const val SERVER_NAME = "intellij-java-profiler"
  */
 class CopilotMcpJsonRegistrar : StartupActivity.DumbAware {
     override fun runActivity(project: Project) {
+        // Pre-initialize JBCefApp on the EDT during startup so its static <clinit>
+        // doesn't fire inside a service initializer when the first JFR editor opens.
+        // That path triggers a "service requested during class init" IDE error in 2025.2+.
+        ApplicationManager.getApplication().invokeLater {
+            try {
+                com.intellij.ui.jcef.JBCefApp.getInstance()
+            } catch (_: Exception) {}
+        }
         register()
     }
 
@@ -31,26 +40,27 @@ class CopilotMcpJsonRegistrar : StartupActivity.DumbAware {
             if (registered) return
             synchronized(this) {
                 if (registered) return
-                registered = true
             }
 
             val port = getMcpPort()
             if (port != null) {
+                registered = true
                 writeEntry(port)
                 installShutdownHook()
             } else {
-                // MCP server not running yet — poll for up to 15s
+                // MCP server not running yet — poll for up to 30s
                 Thread {
-                    repeat(15) {
+                    repeat(30) {
                         Thread.sleep(1000)
                         val p = getMcpPort()
                         if (p != null) {
+                            registered = true
                             writeEntry(p)
                             installShutdownHook()
                             return@Thread
                         }
                     }
-                    LOG.info("MCP server not available after 15s, skipping Copilot mcp.json registration")
+                    LOG.info("MCP server not available after 30s, skipping Copilot mcp.json registration")
                 }.also { it.isDaemon = true }.start()
             }
         }
@@ -58,11 +68,17 @@ class CopilotMcpJsonRegistrar : StartupActivity.DumbAware {
         private fun getMcpPort(): Int? = try {
             val serviceClass = Class.forName("com.intellij.mcpserver.impl.McpServerService")
             val companion = serviceClass.getField("Companion").get(null)
-            val getInstance = companion.javaClass.getMethod("getInstance")
-            val service = getInstance.invoke(companion)
+            val service = companion.javaClass.getMethod("getInstance").invoke(companion)
             val isRunning = service.javaClass.getMethod("isRunning").invoke(service) as Boolean
-            if (isRunning) service.javaClass.getMethod("getPort").invoke(service) as Int else null
-        } catch (_: Exception) {
+            if (!isRunning) {
+                // start() enables the setting and starts the server
+                service.javaClass.getMethod("start").invoke(service)
+                LOG.info("Started JetBrains MCP server via start()")
+            }
+            val port = service.javaClass.getMethod("getPort").invoke(service) as Int
+            if (port > 0) port else null
+        } catch (e: Exception) {
+            LOG.info("getMcpPort failed: ${e.javaClass.simpleName}: ${e.message}")
             null
         }
 
@@ -118,73 +134,65 @@ class CopilotMcpJsonRegistrar : StartupActivity.DumbAware {
             }
         }
 
+        private val json = Json {
+            prettyPrint = true
+            prettyPrintIndent = "    "
+            ignoreUnknownKeys = true
+        }
+
+        private fun stripComments(content: String): String {
+            val sb = StringBuilder(content.length)
+            var inString = false
+            var i = 0
+            while (i < content.length) {
+                val c = content[i]
+                when {
+                    c == '"' && !inString -> { inString = true; sb.append(c) }
+                    c == '"' && inString -> {
+                        // count preceding backslashes to detect escaped quote
+                        var backslashes = 0
+                        var j = i - 1
+                        while (j >= 0 && content[j] == '\\') { backslashes++; j-- }
+                        if (backslashes % 2 == 0) inString = false
+                        sb.append(c)
+                    }
+                    !inString && c == '/' && i + 1 < content.length && content[i + 1] == '/' -> {
+                        // skip to end of line
+                        while (i < content.length && content[i] != '\n') i++
+                        continue
+                    }
+                    else -> sb.append(c)
+                }
+                i++
+            }
+            return sb.toString()
+        }
+
         /** Insert or replace our server block inside the "servers": { ... } object. */
         internal fun upsertServer(content: String, port: Int): String {
-            val entry = serverEntry(port)
-
-            // If our block already exists, replace it (port may have changed)
-            val existingPattern = Regex("""(?m)(\s*)"$SERVER_NAME"\s*:\s*\{[^}]*\}\s*,?\s*\n?""")
-            if (existingPattern.containsMatchIn(content)) {
-                return existingPattern.replace(content) { mr ->
-                    "${mr.groupValues[1]}$entry,\n"
-                }
+            val root = json.parseToJsonElement(stripComments(content)).jsonObject
+            val servers = (root["servers"] as? JsonObject ?: JsonObject(emptyMap())).toMutableMap()
+            servers[SERVER_NAME] = buildJsonObject {
+                put("type", "sse")
+                put("url", "http://127.0.0.1:$port/sse")
             }
-
-            // Otherwise inject before the closing } of "servers"
-            val serversBlockClose = findServersClosingBrace(content) ?: return content
-            return content.substring(0, serversBlockClose) +
-                "        $entry,\n    " +
-                content.substring(serversBlockClose)
+            val updated = JsonObject(root.toMutableMap().also { it["servers"] = JsonObject(servers) })
+            return json.encodeToString(JsonObject.serializer(), updated)
         }
 
         /** Remove our server block from the servers object. */
-        internal fun removeServer(content: String): String =
-            Regex("""(?m)\s*"$SERVER_NAME"\s*:\s*\{[^}]*\}\s*,?\s*\n?""")
-                .replace(content, "\n")
-                .replace(Regex("\n{3,}"), "\n\n")
-
-        private fun serverEntry(port: Int): String =
-            """"$SERVER_NAME": {"url": "http://localhost:$port/sse"}"""
+        internal fun removeServer(content: String): String {
+            val root = json.parseToJsonElement(stripComments(content)).jsonObject
+            val servers = (root["servers"] as? JsonObject ?: JsonObject(emptyMap())).toMutableMap()
+            if (SERVER_NAME !in servers) return content
+            servers.remove(SERVER_NAME)
+            val updated = JsonObject(root.toMutableMap().also { it["servers"] = JsonObject(servers) })
+            return json.encodeToString(JsonObject.serializer(), updated)
+        }
 
         private fun defaultConfig(): String = """{
     "servers": {
     }
 }"""
-
-        private fun findServersClosingBrace(content: String): Int? {
-            val serversKeyIdx = content.indexOf("\"servers\"")
-            if (serversKeyIdx < 0) return null
-            val openBrace = content.indexOf('{', serversKeyIdx + 9)
-            if (openBrace < 0) return null
-
-            var depth = 0
-            var inString = false
-            var inLineComment = false
-            var i = openBrace
-            while (i < content.length) {
-                val c = content[i]
-                when {
-                    inLineComment -> if (c == '\n') inLineComment = false
-                    !inString && c == '/' && i + 1 < content.length && content[i + 1] == '/' -> inLineComment = true
-                    c == '"' && !inLineComment -> {
-                        if (inString) {
-                            var backslashes = 0
-                            var j = i - 1
-                            while (j >= 0 && content[j] == '\\') { backslashes++; j-- }
-                            if (backslashes % 2 == 0) inString = false
-                        } else {
-                            inString = true
-                        }
-                    }
-                    c == '{' && !inString -> depth++
-                    c == '}' && !inString -> {
-                        depth--
-                        if (depth == 0) return i
-                    }
-                }
-                i++
-            }
-            return null
-        }
     }
 }

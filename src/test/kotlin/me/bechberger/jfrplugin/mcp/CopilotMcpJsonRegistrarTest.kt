@@ -14,8 +14,9 @@ class CopilotMcpJsonRegistrarTest {
     @Test
     fun `insert into empty servers block`() {
         val result = CopilotMcpJsonRegistrar.upsertServer(defaultContent, 63342)
-        assertTrue(result.contains(""""intellij-java-profiler": {"url": "http://localhost:63342/sse"}"""))
-        assertTrue(result.contains("// add your MCP servers"))
+        assertTrue(result.contains("intellij-java-profiler"))
+        assertTrue(result.contains("63342"))
+        assertTrue(result.contains("sse"))
     }
 
     @Test
@@ -58,5 +59,42 @@ class CopilotMcpJsonRegistrarTest {
         val removed = CopilotMcpJsonRegistrar.removeServer(withBoth)
         assertTrue(removed.contains("my-server"))
         assertFalse(removed.contains("intellij-java-profiler"))
+    }
+
+    @Test
+    fun `upsert replaces multi-line entry written by Copilot`() {
+        // Copilot may write a multi-line block; our single-line replace must still work
+        val multiLine = """{
+    "servers": {
+        "intellij-java-profiler": {
+            "type": "sse",
+            "url": "http://127.0.0.1:63342/sse",
+            "name": "GitHub Copilot"
+        }
+    }
+}"""
+        val result = CopilotMcpJsonRegistrar.upsertServer(multiLine, 63343)
+        assertFalse(result.contains("63342"))
+        assertTrue(result.contains("63343"))
+        assertEquals(1, Regex(""""intellij-java-profiler"""").findAll(result).count())
+    }
+
+    @Test
+    fun `insert produces valid JSON without trailing comma`() {
+        val result = CopilotMcpJsonRegistrar.upsertServer(defaultContent, 63342)
+        assertFalse(result.contains(Regex(""",\s*\}""")), "Result has trailing comma: $result")
+    }
+
+    @Test
+    fun `insert with existing user server produces valid JSON`() {
+        val withUser = """{
+    "servers": {
+        "my-server": {"url": "http://localhost:9000/sse"}
+    }
+}"""
+        val result = CopilotMcpJsonRegistrar.upsertServer(withUser, 63342)
+        assertFalse(result.contains(Regex(""",\s*\}""")), "Result has trailing comma: $result")
+        assertTrue(result.contains("my-server"))
+        assertTrue(result.contains("intellij-java-profiler"))
     }
 }
