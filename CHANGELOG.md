@@ -4,6 +4,21 @@
 
 ## [Unreleased]
 
+## [0.0.23]
+
+### Fixed
+- Sampling interval now computed via modal-bucket detection — avoids sub-millisecond
+  noise events (GC, allocation) and multi-thread outliers inflating the estimate
+- Marker field extraction corrected: STACKTRACE fields, `cause.time`, `_class`,
+  TABLE format, JFR sentinel values
+- `heapAddressBits` shown as integer `32` instead of hex `0x20`
+- Execution samples now correctly attributed using `sampledThread` field (not
+  `eventThread`), fixing 0-sample CJFR profiles
+- Native/GC threads now uniquely identified via `osThreadId` when `javaThreadId=0`
+
+### Changed
+- Update jfrtofp to 0.0.13, jfrtofp-server to 0.0.14
+
 ## [0.0.22]
 
 ### Added
