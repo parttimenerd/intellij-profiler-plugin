@@ -139,7 +139,7 @@ dependencies {
     implementation("me.bechberger:jfrtofp-server:0.0.14") {
         isChanging = true
     }
-    implementation("me.bechberger:jfrtofp:0.0.12") {
+    implementation("me.bechberger:jfrtofp:0.0.13") {
         isChanging = true
     }
     implementation("me.bechberger:condensed-data:0.1.3") {
