@@ -139,10 +139,10 @@ dependencies {
     implementation("me.bechberger:jfrtofp-server:0.0.14") {
         isChanging = true
     }
-    implementation("me.bechberger:jfrtofp:0.0.13") {
+    implementation("me.bechberger:jfrtofp:0.0.14") {
         isChanging = true
     }
-    implementation("me.bechberger:condensed-data:0.1.3") {
+    implementation("me.bechberger:condensed-data:0.1.4") {
         isChanging = true
     }
     implementation("me.bechberger:ap-loader-all:4.5-13")
