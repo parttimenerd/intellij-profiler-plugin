@@ -46,18 +46,18 @@ data class ConversionConfig(
     val minRequiredItemsPerThread: Int = Config.DEFAULT_MIN_ITEMS_PER_THREAD
 ) {
     fun toConfig(): Config {
-        return Config(
-            nonProjectPackagePrefixes = nonProjectPackagePrefixes,
-            enableMarkers = enableMarkers,
-            initialVisibleThreads = initialVisibleThreads,
-            initialSelectedThreads = initialSelectedThreads,
-            includeGCThreads = includeGCThreads,
-            includeInitialSystemProperty = includeInitialSystemProperty,
-            includeInitialEnvironmentVariables = includeInitialEnvironmentVariables,
-            includeSystemProcesses = includeSystemProcesses,
-            ignoredEvents = ignoredEvents.toSet(),
-            minRequiredItemsPerThread = minRequiredItemsPerThread
-        )
+        val cfg = Config()
+        cfg.setNonProjectPackagePrefixes(nonProjectPackagePrefixes)
+        cfg.setEnableMarkers(enableMarkers)
+        cfg.setInitialVisibleThreads(initialVisibleThreads)
+        cfg.setInitialSelectedThreads(initialSelectedThreads)
+        cfg.setIncludeGCThreads(includeGCThreads)
+        cfg.setIncludeInitialSystemProperty(includeInitialSystemProperty)
+        cfg.setIncludeInitialEnvironmentVariables(includeInitialEnvironmentVariables)
+        cfg.setIncludeSystemProcesses(includeSystemProcesses)
+        cfg.setIgnoredEvents(ignoredEvents.toHashSet())
+        cfg.setMinRequiredItemsPerThread(minRequiredItemsPerThread)
+        return cfg
     }
 }
 

@@ -134,12 +134,12 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.4.20")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     implementation("me.bechberger:jfrtofp-server:0.0.14") {
         isChanging = true
     }
-    implementation("me.bechberger:jfrtofp:0.0.10") {
+    implementation("me.bechberger:jfrtofp:0.0.12") {
         isChanging = true
     }
     implementation("me.bechberger:condensed-data:0.1.3") {
