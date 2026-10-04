@@ -22,6 +22,15 @@ private const val SERVER_NAME = "intellij-java-profiler"
  */
 class CopilotMcpJsonRegistrar : StartupActivity.DumbAware {
     override fun runActivity(project: Project) {
+        // Pre-initialize JBCefApp on the EDT to avoid "service requested during class init"
+        // in 2025.2+. Guarded by Class.forName so it silently skips on IDE versions where
+        // the class has moved or is no longer visible from the plugin classloader (263.x+).
+        ApplicationManager.getApplication().invokeLater {
+            try {
+                val cls = Class.forName("com.intellij.ui.jcef.JBCefApp")
+                cls.getMethod("getInstance").invoke(null)
+            } catch (_: Exception) {}
+        }
         register()
     }
 
