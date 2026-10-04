@@ -22,5 +22,18 @@ jobs:
           java-version: '21'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Build and install condensed-data
+        run: |
+          set -euo pipefail
+          git clone --depth=1 https://github.com/parttimenerd/condensed-data.git /tmp/condensed-data
+          cd /tmp/condensed-data
+          mvn -q install -Dmaven.test.skip=true -P'!jmc-test'
+      - name: Build and install jfrtofp
+        run: |
+          set -euo pipefail
+          git clone --depth=1 https://github.com/parttimenerd/jfrtofp.git /tmp/jfrtofp
+          cd /tmp/jfrtofp
+          chmod +x gradlew
+          ./gradlew publishToMavenLocal -x test -x installCondensedData
       - name: test
         run: ./gradlew test

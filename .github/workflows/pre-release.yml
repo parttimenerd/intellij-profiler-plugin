@@ -51,6 +51,23 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Build and install condensed-data
+        if: steps.check_version.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+          git clone --depth=1 https://github.com/parttimenerd/condensed-data.git /tmp/condensed-data
+          cd /tmp/condensed-data
+          mvn -q install -Dmaven.test.skip=true -P'!jmc-test'
+
+      - name: Build and install jfrtofp
+        if: steps.check_version.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+          git clone --depth=1 https://github.com/parttimenerd/jfrtofp.git /tmp/jfrtofp
+          cd /tmp/jfrtofp
+          chmod +x gradlew
+          ./gradlew publishToMavenLocal -x test -x installCondensedData
+
       - name: Build Plugin (full, with Jeffrey)
         if: steps.check_version.outputs.skip == 'false'
         run: ./gradlew buildPlugin -PincludeJeffrey=true
