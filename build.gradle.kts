@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -68,6 +69,9 @@ repositories {
                 ?: providers.environmentVariable("GITHUB_TOKEN").orNull
                 ?: providers.gradleProperty("gpr.key").orNull ?: ""
         }
+        mavenContent {
+            includeGroup("me.bechberger")
+        }
     }
     intellijPlatform {
         defaultRepositories()
@@ -105,6 +109,12 @@ intellijPlatform {
 
     publishing {
         token = providers.environmentVariable("PUBLISH_TOKEN")
+    }
+
+    pluginVerification {
+        ides {
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2025.2.6")
+        }
     }
 }
 
