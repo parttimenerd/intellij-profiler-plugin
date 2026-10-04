@@ -22,14 +22,6 @@ private const val SERVER_NAME = "intellij-java-profiler"
  */
 class CopilotMcpJsonRegistrar : StartupActivity.DumbAware {
     override fun runActivity(project: Project) {
-        // Pre-initialize JBCefApp on the EDT during startup so its static <clinit>
-        // doesn't fire inside a service initializer when the first JFR editor opens.
-        // That path triggers a "service requested during class init" IDE error in 2025.2+.
-        ApplicationManager.getApplication().invokeLater {
-            try {
-                com.intellij.ui.jcef.JBCefApp.getInstance()
-            } catch (_: Exception) {}
-        }
         register()
     }
 
