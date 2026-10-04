@@ -48,6 +48,23 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # Build condensed-data from source and install to mavenLocal
+      - name: Build and install condensed-data
+        run: |
+          set -euo pipefail
+          git clone --depth=1 https://github.com/parttimenerd/condensed-data.git /tmp/condensed-data
+          cd /tmp/condensed-data
+          mvn -q install -Dmaven.test.skip=true -P'!jmc-test'
+
+      # Build jfrtofp from source and install to mavenLocal
+      - name: Build and install jfrtofp
+        run: |
+          set -euo pipefail
+          git clone --depth=1 https://github.com/parttimenerd/jfrtofp.git /tmp/jfrtofp
+          cd /tmp/jfrtofp
+          chmod +x gradlew
+          ./gradlew publishToMavenLocal -x test -x installCondensedData
+
       # Set environment variables
       - name: Export Properties
         id: properties
