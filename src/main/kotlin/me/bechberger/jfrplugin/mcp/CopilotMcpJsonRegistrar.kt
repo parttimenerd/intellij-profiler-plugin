@@ -1,6 +1,5 @@
 package me.bechberger.jfrplugin.mcp
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -84,14 +83,7 @@ class CopilotMcpJsonRegistrar : StartupActivity.DumbAware {
         }
 
         private fun installShutdownHook() {
-            ApplicationManager.getApplication().invokeLater {
-                ApplicationManager.getApplication().addApplicationListener(
-                    object : com.intellij.openapi.application.ApplicationListener {
-                        override fun applicationExiting() = removeEntry()
-                    },
-                    ApplicationManager.getApplication() as Disposable
-                )
-            }
+            Runtime.getRuntime().addShutdownHook(Thread({ removeEntry() }, "jfr-plugin-mcp-cleanup"))
         }
 
         private fun mcpJsonPath(): Path {
