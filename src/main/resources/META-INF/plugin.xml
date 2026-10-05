@@ -18,6 +18,7 @@
     <depends>com.intellij.modules.java</depends>
     <depends optional="true" config-file="mcp.xml">com.intellij.mcpServer</depends>
     <depends optional="true" config-file="copilot.xml">com.github.copilot</depends>
+    <depends optional="true" config-file="jcef.xml">com.intellij.modules.jcef</depends>
 
     <extensions defaultExtensionNs="com.intellij">
 
@@ -36,9 +37,6 @@
                   patterns="*.jfr;*.cjfr"
                   fieldName="INSTANCE"
                   implementationClass="me.bechberger.jfrplugin.lang.JFRFileType"/>
-        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JFRFileEditorProvider"/>
-        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JeffreyFileEditorProvider"/>
-        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JeffreyUrlFileEditorProvider"/>
 
         <fileType name="Firefox Profiler"
                   extensions="json.gz"
@@ -46,7 +44,6 @@
                   language="Firefox Profiler"
                   fieldName="INSTANCE"
                   implementationClass="me.bechberger.jfrplugin.lang.JsonGzFileType"/>
-        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JsonGzFileEditorProvider"/>
 
         <postStartupActivity implementation="me.bechberger.jfrplugin.mcp.CopilotMcpJsonRegistrar"/>
 

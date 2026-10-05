@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fix `ClassNotFoundException: JBCefBrowserBuilder` on IntelliJ 2026.2+: JCEF moved to a
+  separate bundled plugin (`com.intellij.modules.jcef`) in 2026.2; the plugin now declares
+  an optional dependency so file editors are only registered when JCEF is available
+- Fix `NoClassDefFoundError: Types$Predefined` when opening `.cjfr` files via Jeffrey:
+  the JMC `flightrecorder.writer` transitive dependency was not bundled by `condensed-data`
+
 ## [0.0.23]
 
 ### Fixed

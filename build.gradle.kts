@@ -155,6 +155,7 @@ dependencies {
     implementation("me.bechberger:condensed-data:0.1.4") {
         isChanging = true
     }
+    implementation("org.openjdk.jmc:flightrecorder.writer:9.1.2")
     implementation("me.bechberger:ap-loader-all:4.5-13")
 }
 

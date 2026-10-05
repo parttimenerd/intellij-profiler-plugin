@@ -7,3 +7,4 @@ fun isAsyncProfilerSupported() = try {
 } catch (_: Throwable) {
     false
 }
+
