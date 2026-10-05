@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.0.24] - 2026-10-05
+
 ### Fixed
 - Fix `ClassNotFoundException: JBCefBrowserBuilder` on IntelliJ 2026.2+: JCEF moved to a
   separate bundled plugin (`com.intellij.modules.jcef`) in 2026.2; the plugin now declares
