@@ -4,7 +4,7 @@
 
 ## [Unreleased]
 
-## [0.0.24] - 2026-10-05
+## [0.0.24]
 
 ### Fixed
 - Fix `ClassNotFoundException: JBCefBrowserBuilder` on IntelliJ 2026.2+: JCEF moved to a
