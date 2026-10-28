@@ -265,6 +265,32 @@ tasks {
 
 tasks.findByName("build")?.dependsOn(tasks.findByName("copyHooks") as Any)
 
+val jetbrainsPluginDirs = listOf(
+    "${System.getProperty("user.home")}/Library/Application Support/JetBrains/IdeaIC2025.2/plugins",
+    "${System.getProperty("user.home")}/Library/Application Support/JetBrains/IntelliJIdea2026.2/plugins"
+).map { file(it) }.filter { it.exists() }
+
+tasks.register("installPlugin") {
+    description = "Build the plugin (slim) and install it into local IntelliJ plugin directories"
+    dependsOn("buildPlugin")
+    doLast {
+        val pluginName = properties("pluginName")
+        val zip = fileTree("build/distributions").matching { include("*.zip") }
+            .filter { !it.name.endsWith("-full.zip") }
+            .singleOrNull()
+            ?: fileTree("build/distributions").matching { include("*.zip") }.first()
+        jetbrainsPluginDirs.forEach { pluginsDir ->
+            val target = pluginsDir.resolve(pluginName)
+            target.deleteRecursively()
+            copy {
+                from(zipTree(zip))
+                into(pluginsDir)
+            }
+            logger.lifecycle("Installed plugin into ${target.absolutePath}")
+        }
+    }
+}
+
 publishing {
     repositories {
         maven {
