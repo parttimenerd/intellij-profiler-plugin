@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
-val jeffreyVersion = "0.13.32"
+val jeffreyVersion = "0.14.7"
 val jeffreyJarUrl = "https://github.com/petrbouda/jeffrey/releases/download/v$jeffreyVersion/microscope.jar"
 val jeffreyJarDest = layout.projectDirectory.file("src/main/resources/jeffrey/microscope.jar")
 
@@ -148,13 +148,56 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     implementation("me.bechberger:jfrtofp-server:0.0.14") {
         isChanging = true
+        isTransitive = false
     }
     implementation("me.bechberger:jfrtofp:0.0.14") {
         isChanging = true
+        isTransitive = false
     }
     implementation("me.bechberger:condensed-data:0.1.4") {
         isChanging = true
+        isTransitive = false
     }
+    // Transitive deps of jfrtofp-server (declared explicitly because GitHub Packages requires read:packages)
+    implementation("io.javalin:javalin:7.2.3") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-server:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-http:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-io:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-util:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-security:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-session:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-xml:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-plus:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-jndi:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty:jetty-annotations:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.ee:jetty-ee-webapp:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.ee10:jetty-ee10-servlet:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.ee10:jetty-ee10-webapp:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.ee10:jetty-ee10-annotations:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.ee10:jetty-ee10-plus:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jetty-server:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-servlet:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.websocket:jetty-websocket-core-common:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.websocket:jetty-websocket-core-server:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.websocket:jetty-websocket-jetty-api:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.websocket:jetty-websocket-jetty-common:12.1.12") { isTransitive = false }
+    implementation("org.eclipse.jetty.websocket:jetty-websocket-jetty-server:12.1.12") { isTransitive = false }
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.19.0") { isTransitive = false }
+    implementation("com.fasterxml.jackson.core:jackson-core:2.19.0") { isTransitive = false }
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.19.0") { isTransitive = false }
+    implementation("org.slf4j:slf4j-api:2.0.18") { isTransitive = false }
+    implementation("org.slf4j:slf4j-simple:2.0.17") { isTransitive = false }
+    implementation("jakarta.servlet:jakarta.servlet-api:6.0.0") { isTransitive = false }
+    implementation("jakarta.annotation:jakarta.annotation-api:2.1.1") { isTransitive = false }
+    implementation("jakarta.enterprise:jakarta.enterprise.cdi-api:4.0.1") { isTransitive = false }
+    implementation("jakarta.inject:jakarta.inject-api:2.0.1") { isTransitive = false }
+    implementation("jakarta.interceptor:jakarta.interceptor-api:2.1.0") { isTransitive = false }
+    implementation("jakarta.transaction:jakarta.transaction-api:2.0.1") { isTransitive = false }
+    implementation("info.picocli:picocli:4.7.7") { isTransitive = false }
+    implementation("org.ow2.asm:asm:9.10.1") { isTransitive = false }
+    implementation("org.ow2.asm:asm-commons:9.10.1") { isTransitive = false }
+    implementation("org.ow2.asm:asm-tree:9.10.1") { isTransitive = false }
+    implementation("io.jafar:jafar-parser:0.27.0") { isTransitive = false }
     implementation("org.openjdk.jmc:flightrecorder.writer:9.1.2")
     implementation("me.bechberger:ap-loader-all:4.5-13")
 }
