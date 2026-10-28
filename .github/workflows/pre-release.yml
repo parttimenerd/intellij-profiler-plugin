@@ -73,7 +73,7 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           tag_name: "latest"
           prerelease: true
-          name: "Development Build ${{ steps.get_version.outputs.pluginVersion }}"
+          name: "Latest"
           body: |
             Development build of version ${{ steps.get_version.outputs.pluginVersion }}.
 
