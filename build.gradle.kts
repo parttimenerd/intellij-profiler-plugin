@@ -197,7 +197,7 @@ dependencies {
     implementation("org.ow2.asm:asm:9.10.1") { isTransitive = false }
     implementation("org.ow2.asm:asm-commons:9.10.1") { isTransitive = false }
     implementation("org.ow2.asm:asm-tree:9.10.1") { isTransitive = false }
-    implementation("io.jafar:jafar-parser:0.27.0") { isTransitive = false }
+    implementation(files("libs/jafar-parser-0.27.0.jar"))
     implementation("org.openjdk.jmc:flightrecorder.writer:9.1.2")
     implementation("me.bechberger:ap-loader-all:4.5-13")
 }

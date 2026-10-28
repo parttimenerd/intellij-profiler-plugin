@@ -4,6 +4,7 @@ target
 *.versionsBackup
 classes
 *.jar
+!libs/*.jar
 out
 build
 .gradle
