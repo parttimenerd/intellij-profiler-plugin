@@ -3,6 +3,7 @@ package me.bechberger.jfrplugin.editor;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.ui.jcef.JBCefApp;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.ui.jcef.JBCefBrowserBuilder;
 import me.bechberger.jfrplugin.util.PsiUtils;
@@ -33,7 +34,14 @@ public class WebViewWindow implements Disposable {
     public WebViewWindow(Project project, Config config, Path file, String overrideUrl) {
         // Start the browser immediately on a blank page so JCEF initializes while
         // the server starts in the background — this keeps the EDT unblocked.
-        browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).build();
+        // Disable OSR when possible (windowed = GPU-accelerated); fall back to 60fps OSR if forced on.
+        JBCefBrowserBuilder builder = new JBCefBrowserBuilder()
+                .setEnableOpenDevToolsMenuItem(true)
+                .setOffScreenRendering(false);
+        if (JBCefApp.isOffScreenRenderingModeEnabled()) {
+            builder.setWindowlessFramerate(60);
+        }
+        browser = builder.build();
         Disposer.register(project, browser);
 
         CompletableFuture.runAsync(() -> {
