@@ -1,4 +1,4 @@
-name: Pre-Release (only if version did not change)
+name: Pre-Release
 
 on:
   push:
@@ -25,26 +25,7 @@ jobs:
           version=$(grep '^pluginVersion' gradle.properties | cut -d'=' -f2 | xargs)
           echo "pluginVersion=$version" >> $GITHUB_OUTPUT
 
-      - name: Fetch latest tag
-        id: get_tag
-        run: |
-          git fetch --tags
-          latest_tag=$(git tag --list 'v*' --sort=-v:refname | head -n1 | sed 's/^v//')
-          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
-
-      - name: Check if version matches latest tag
-        id: check_version
-        run: |
-          if [ "${{ steps.get_version.outputs.pluginVersion }}" = "${{ steps.get_tag.outputs.latest_tag }}" ]; then
-            echo "Version ${{ steps.get_version.outputs.pluginVersion }} already tagged — skipping pre-release."
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "New version ${{ steps.get_version.outputs.pluginVersion }} (latest tag: ${{ steps.get_tag.outputs.latest_tag }}) — building pre-release."
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Setup Java
-        if: steps.check_version.outputs.skip == 'false'
         uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -52,7 +33,6 @@ jobs:
           cache: gradle
 
       - name: Build and install condensed-data
-        if: steps.check_version.outputs.skip == 'false'
         run: |
           set -euo pipefail
           git clone --depth=1 https://github.com/parttimenerd/condensed-data.git /tmp/condensed-data
@@ -60,7 +40,6 @@ jobs:
           mvn -q install -Dmaven.test.skip=true -P'!jmc-test'
 
       - name: Build and install jfrtofp
-        if: steps.check_version.outputs.skip == 'false'
         run: |
           set -euo pipefail
           git clone --depth=1 https://github.com/parttimenerd/jfrtofp.git /tmp/jfrtofp
@@ -69,27 +48,22 @@ jobs:
           ./gradlew publishToMavenLocal -x test -x installCondensedData
 
       - name: Build Plugin (full, with Jeffrey)
-        if: steps.check_version.outputs.skip == 'false'
         run: ./gradlew buildPlugin -PincludeJeffrey=true
 
       - name: Rename full ZIP
-        if: steps.check_version.outputs.skip == 'false'
         run: |
           cd build/distributions
           for f in *.zip; do mv "$f" "${f%.zip}-full.zip"; done
 
       - name: Build Plugin (slim, without Jeffrey)
-        if: steps.check_version.outputs.skip == 'false'
         run: ./gradlew buildPlugin -PincludeJeffrey=false
 
       - name: Rename slim ZIP
-        if: steps.check_version.outputs.skip == 'false'
         run: |
           cd build/distributions
           for f in *.zip; do [[ "$f" != *-full.zip ]] && mv "$f" "${f%.zip}-slim.zip"; done
 
       - name: Publish Pre-Release
-        if: steps.check_version.outputs.skip == 'false'
         uses: softprops/action-gh-release@v2
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
