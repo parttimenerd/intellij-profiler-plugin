@@ -63,6 +63,10 @@ jobs:
           cd build/distributions
           for f in *.zip; do [[ "$f" != *-full.zip ]] && mv "$f" "${f%.zip}-slim.zip"; done
 
+      - name: Delete existing pre-release and tag
+        run: |
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+
       - name: Publish Pre-Release
         uses: softprops/action-gh-release@v2
         with:
