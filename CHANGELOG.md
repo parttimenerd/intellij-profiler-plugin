@@ -15,6 +15,7 @@
 - "Cannot focus editor" warnings on every click: `getPreferredFocusedComponent()` returned a non-null component before JCEF finished initializing
 - 2.5–3 second BGT stalls when right-clicking files: `OpenWithJeffreyAction` was spawning `which java` and `java -version` subprocesses on every action update; result is now cached after the first call
 - `jafar-parser` dependency changed from `io.jafar:jafar-parser:0.27.0` (not on Maven Central) to `io.btrace:jafar-parser:0.29.0`, fixing CI build failures
+- Opening `.cjfr` files returned a 500 error and Jeffrey tab showed "Starting Jeffrey…" indefinitely: `femtolz4` (used by `condensed-data` for LZ4 decompression) was not bundled in the plugin, causing `NoClassDefFoundError: me/bechberger/femtolz4/LZ4FrameOutputStream`
 
 ### Performance
 - Firefox Profiler server now starts on a background thread instead of the EDT; the browser renders immediately on a blank page while the server initializes, eliminating the UI freeze on file open
