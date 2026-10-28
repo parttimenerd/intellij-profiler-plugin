@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## [0.0.25]
+
+### Added
+- Both Firefox Profiler and Jeffrey tabs are now shown when opening a JFR file; the default tab is configurable via `.profileconfig.json` (`FIREFOX_PROFILER` or `JEFFREY`)
+- Jeffrey tab is lazy — the Jeffrey process only starts when you actually switch to the tab
+
+### Fixed
+- JFR files failed to open any editor tab in IdeaIC 2025.2: `com.intellij.modules.jcef` is not a valid plugin ID in 2025.x (JCEF is part of the platform), so the optional dependency block silently skipped all four file editor providers
+- "Cannot focus editor" warnings on every click: `getPreferredFocusedComponent()` returned a non-null component before JCEF finished initializing
+- 2.5–3 second BGT stalls when right-clicking files: `OpenWithJeffreyAction` was spawning `which java` and `java -version` subprocesses on every action update; result is now cached after the first call
+- `jafar-parser` dependency changed from `io.jafar:jafar-parser:0.27.0` (not on Maven Central) to `io.btrace:jafar-parser:0.29.0`, fixing CI build failures
+
+### Performance
+- Firefox Profiler server now starts on a background thread instead of the EDT; the browser renders immediately on a blank page while the server initializes, eliminating the UI freeze on file open
+- Disable JCEF Off-Screen Rendering (OSR) when possible for GPU-accelerated windowed rendering; fall back to 60 fps OSR when IntelliJ forces OSR on globally
+
 ## [0.0.24]
 
 ### Fixed
