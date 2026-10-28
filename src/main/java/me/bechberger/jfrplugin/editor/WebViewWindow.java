@@ -11,6 +11,7 @@ import me.bechberger.jfrtofp.server.Server;
 
 import javax.swing.*;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 /**
@@ -23,34 +24,39 @@ public class WebViewWindow implements Disposable {
     private static final Logger logger = Logger.getLogger("Java JFR Profiler WebViewWindow");
 
     private final JBCefBrowser browser;
-    private final String firefoxProfilerUrl;
+    private volatile String firefoxProfilerUrl;
 
     public WebViewWindow(Project project, Config config, Path file) {
         this(project, config, file, null);
     }
 
     public WebViewWindow(Project project, Config config, Path file, String overrideUrl) {
-        this.firefoxProfilerUrl = Server.startIfNeededAndGetUrl(file, config,
-                (classLocation) -> PsiUtils.INSTANCE.getFileContent(project,
-                classLocation.klass, classLocation.pkg), (dest) -> PsiUtils.INSTANCE.navigateToClass(project,
-                dest.klass, dest.pkg, dest.line, dest.method));
-
-        String initialUrl = overrideUrl != null ? overrideUrl : firefoxProfilerUrl;
-        logger.info("URL: " + initialUrl);
-        browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).setUrl(initialUrl).build();
+        // Start the browser immediately on a blank page so JCEF initializes while
+        // the server starts in the background — this keeps the EDT unblocked.
+        browser = new JBCefBrowserBuilder().setEnableOpenDevToolsMenuItem(true).build();
         Disposer.register(project, browser);
-        // Retry until the browser actually loads the URL (CEF can drop the first load attempt)
+
+        CompletableFuture.runAsync(() -> {
+            this.firefoxProfilerUrl = Server.startIfNeededAndGetUrl(file, config,
+                    (classLocation) -> PsiUtils.INSTANCE.getFileContent(project,
+                            classLocation.klass, classLocation.pkg),
+                    (dest) -> PsiUtils.INSTANCE.navigateToClass(project,
+                            dest.klass, dest.pkg, dest.line, dest.method));
+
+            String url = overrideUrl != null ? overrideUrl : firefoxProfilerUrl;
+            logger.info("URL: " + url);
+            loadWithRetry(url);
+        });
+    }
+
+    /** Load the URL, retrying if CEF drops the first attempt (happens before the browser is fully initialised). */
+    private void loadWithRetry(String url) {
+        browser.getCefBrowser().loadURL(url);
         new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                if (browser.getCefBrowser().getURL().startsWith("http://localhost:")) {
-                    break;
-                }
-                browser.getCefBrowser().loadURL(initialUrl);
+            for (int i = 0; i < 100; i++) {
+                try { Thread.sleep(50); } catch (InterruptedException e) { return; }
+                if (browser.getCefBrowser().getURL().startsWith("http://localhost:")) return;
+                browser.getCefBrowser().loadURL(url);
             }
         }).start();
     }
@@ -72,7 +78,8 @@ public class WebViewWindow implements Disposable {
     }
 
     public void reloadWithFirefoxProfiler() {
-        browser.getCefBrowser().loadURL(firefoxProfilerUrl);
+        String url = firefoxProfilerUrl;
+        if (url != null) browser.getCefBrowser().loadURL(url);
     }
 
     @Override
