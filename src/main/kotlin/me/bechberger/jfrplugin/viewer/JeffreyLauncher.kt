@@ -34,23 +34,26 @@ object JeffreyLauncher {
      * for [jfrFile]. Jeffrey imports and analyzes the file itself via local path — no upload needed.
      * Returns null if no suitable JDK is available or startup fails.
      */
-    fun startOrReuseAndGetUrl(jfrFile: Path, project: Project): String? =
-        startOrReuseAndGetUrlForFiles(listOf(jfrFile), project)
+    fun startOrReuseAndGetUrl(jfrFile: Path, project: Project, status: (String) -> Unit = {}): String? =
+        startOrReuseAndGetUrlForFiles(listOf(jfrFile), project, status)
 
     /**
      * Starts Jeffrey (or reuses a running instance) and returns a URL for the given files.
      * Single file: uses the `/quick-open?path=` deep link (Jeffrey imports + analyzes itself).
      * Multiple files: imports each via `/from-path`, then returns the recordings list.
      * .cjfr files are inflated to a temp .jfr before being passed to Jeffrey.
+     * [status] receives human-readable progress messages during startup.
      */
-    fun startOrReuseAndGetUrlForFiles(jfrFiles: List<Path>, project: Project): String? {
+    fun startOrReuseAndGetUrlForFiles(jfrFiles: List<Path>, project: Project, status: (String) -> Unit = {}): String? {
         if (jfrFiles.isEmpty()) return null
         if (!isRunning()) {
-            if (!startAndGetUrl(project)) return null
+            if (!startAndGetUrl(project, status)) return null
         }
         val resolvedFiles = jfrFiles.map { file ->
-            if (file.fileName.toString().endsWith(".cjfr")) inflateCjfrToTemp(file) ?: return null
-            else file
+            if (file.fileName.toString().endsWith(".cjfr")) {
+                status("Converting ${file.fileName} to JFR…")
+                inflateCjfrToTemp(file) ?: return null
+            } else file
         }
         val base = "http://localhost:$currentPort"
         if (resolvedFiles.size == 1) {
@@ -116,10 +119,11 @@ object JeffreyLauncher {
         return pattern.find(json)?.groupValues?.get(1)
     }
 
-    private fun startAndGetUrl(project: Project): Boolean {
+    private fun startAndGetUrl(project: Project, status: (String) -> Unit): Boolean {
         stop()
         killStaleMicroscopeProcesses()
 
+        status("Extracting Jeffrey…")
         val jar = extractJar() ?: run {
             LOG.warning("microscope.jar not bundled — Jeffrey viewer unavailable")
             return false
@@ -157,6 +161,7 @@ object JeffreyLauncher {
             .start()
         currentPort = port
 
+        status("Starting Jeffrey…")
         if (!waitForReady(port, timeoutSeconds = 60)) {
             val reason = if (process?.isAlive == false) "exited immediately" else "did not become ready within 60 s"
             LOG.warning("Jeffrey $reason — see ${logFile.toAbsolutePath()}")

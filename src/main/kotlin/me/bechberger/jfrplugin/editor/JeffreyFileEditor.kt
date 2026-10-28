@@ -30,11 +30,14 @@ class JeffreyFileEditor(private val project: Project, private val virtualFile: V
     private fun startJeffrey() {
         if (!launched.compareAndSet(false, true)) return
         wrapper.removeAll()
-        wrapper.add(JLabel("Starting Jeffrey…", JLabel.CENTER), BorderLayout.CENTER)
+        val statusLabel = JLabel("Starting Jeffrey…", JLabel.CENTER)
+        wrapper.add(statusLabel, BorderLayout.CENTER)
         wrapper.revalidate()
         wrapper.repaint()
         Thread {
-            val url = JeffreyLauncher.startOrReuseAndGetUrl(virtualFile.toNioPath(), project)
+            val url = JeffreyLauncher.startOrReuseAndGetUrl(virtualFile.toNioPath(), project) { msg ->
+                javax.swing.SwingUtilities.invokeLater { statusLabel.text = msg }
+            }
             javax.swing.SwingUtilities.invokeLater {
                 wrapper.removeAll()
                 if (url != null) {
