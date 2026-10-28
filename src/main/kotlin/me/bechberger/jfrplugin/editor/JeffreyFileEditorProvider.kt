@@ -18,5 +18,5 @@ class JeffreyFileEditorProvider : FileEditorProvider, DumbAware {
     override fun createEditor(project: Project, file: VirtualFile): FileEditor =
         JeffreyFileEditor(project, file)
 
-    override fun getPolicy() = FileEditorPolicy.PLACE_AFTER_DEFAULT_EDITOR
+    override fun getPolicy() = FileEditorPolicy.HIDE_DEFAULT_EDITOR
 }

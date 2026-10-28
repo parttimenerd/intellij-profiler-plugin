@@ -50,6 +50,11 @@
 
         <postStartupActivity implementation="me.bechberger.jfrplugin.mcp.CopilotMcpJsonRegistrar"/>
 
+        <projectListeners>
+            <listener class="me.bechberger.jfrplugin.editor.JFRFileOpenListener"
+                      topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
+        </projectListeners>
+
         <runConfigurationExtension implementation="me.bechberger.jfrplugin.runner.jfr.JFRPluginRunConfigurationExtension"/>
         <programRunner implementation="me.bechberger.jfrplugin.runner.jfr.JFRProgramRunner"/>
         <executor implementation="me.bechberger.jfrplugin.runner.jfr.JFRExecutor"/>

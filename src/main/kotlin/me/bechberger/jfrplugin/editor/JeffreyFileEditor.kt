@@ -5,6 +5,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import me.bechberger.jfrplugin.viewer.JeffreyLauncher
 import java.awt.BorderLayout
+import java.awt.event.HierarchyEvent
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Logger
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -14,11 +16,23 @@ class JeffreyFileEditor(private val project: Project, private val virtualFile: V
 
     private val wrapper = JPanel(BorderLayout())
     private var browserWindow: JeffreyBrowserWindow? = null
+    private val launched = AtomicBoolean(false)
 
     init {
-        val placeholder = JLabel("Starting Jeffrey…", JLabel.CENTER)
-        wrapper.add(placeholder, BorderLayout.CENTER)
+        wrapper.add(JLabel("Select the Jeffrey tab to load it.", JLabel.CENTER), BorderLayout.CENTER)
+        wrapper.addHierarchyListener { e ->
+            if (e.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong() != 0L && wrapper.isShowing) {
+                startJeffrey()
+            }
+        }
+    }
 
+    private fun startJeffrey() {
+        if (!launched.compareAndSet(false, true)) return
+        wrapper.removeAll()
+        wrapper.add(JLabel("Starting Jeffrey…", JLabel.CENTER), BorderLayout.CENTER)
+        wrapper.revalidate()
+        wrapper.repaint()
         Thread {
             val url = JeffreyLauncher.startOrReuseAndGetUrl(virtualFile.toNioPath(), project)
             javax.swing.SwingUtilities.invokeLater {
