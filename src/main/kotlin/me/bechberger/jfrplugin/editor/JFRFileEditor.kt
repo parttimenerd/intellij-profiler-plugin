@@ -29,7 +29,7 @@ class JFRFileEditor(private val project: Project, private val virtualFile: Virtu
     override fun getName(): String = NAME
     override fun getFile(): VirtualFile = virtualFile
     override fun getComponent(): JComponent = webViewWindow.component
-    override fun getPreferredFocusedComponent(): JComponent = webViewWindow.component
+    override fun getPreferredFocusedComponent(): JComponent? = webViewWindow.component
 
     private inner class FileChangedListener : BulkFileListener {
         override fun after(events: MutableList<out VFileEvent>) {

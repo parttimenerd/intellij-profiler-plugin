@@ -26,6 +26,9 @@ object JeffreyLauncher {
     /** Minimum Java major version required to run the bundled Jeffrey jar. */
     const val JEFFREY_MIN_JAVA = 25
 
+    private var cachedJavaPath: String? = null
+    private var javaSearchDone = false
+
     /**
      * Starts Jeffrey (or reuses a running instance) and returns the `/quick-open?path=` URL
      * for [jfrFile]. Jeffrey imports and analyzes the file itself via local path — no upload needed.
@@ -238,8 +241,10 @@ object JeffreyLauncher {
      *   4. macOS /Library/Java/JavaVirtualMachines
      *   5. Linux /usr/lib/jvm
      * Returns null if no suitable JVM is found.
+     * Result is cached after the first successful search.
      */
     private fun findJava(): String? {
+        if (javaSearchDone) return cachedJavaPath
         val candidates = mutableListOf<Path>()
 
         // 0. IDE's own bundled JBR (highest priority — always present, version known)
@@ -301,10 +306,13 @@ object JeffreyLauncher {
             }
         }
 
-        return candidates
+        val result = candidates
             .filter { Files.isExecutable(it) }
             .firstOrNull { javaVersion(it) >= JEFFREY_MIN_JAVA }
             ?.toString()
+        cachedJavaPath = result
+        javaSearchDone = true
+        return result
     }
 
     /** Returns the major version of the given java binary, or 0 on failure. */

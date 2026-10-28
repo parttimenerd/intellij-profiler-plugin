@@ -18,9 +18,12 @@
     <depends>com.intellij.modules.java</depends>
     <depends optional="true" config-file="mcp.xml">com.intellij.mcpServer</depends>
     <depends optional="true" config-file="copilot.xml">com.github.copilot</depends>
-    <depends optional="true" config-file="jcef.xml">com.intellij.modules.jcef</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JFRFileEditorProvider"/>
+        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JeffreyFileEditorProvider"/>
+        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JeffreyUrlFileEditorProvider"/>
+        <fileEditorProvider implementation="me.bechberger.jfrplugin.editor.JsonGzFileEditorProvider"/>
 
         <projectService serviceImplementation="me.bechberger.jfrplugin.viewer.JeffreyIdeJumpService"/>
 
