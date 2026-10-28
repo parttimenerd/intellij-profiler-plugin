@@ -10,7 +10,9 @@
 - `profiler.WallClockSample` (async-profiler wall-clock events) now recognized as execution samples in the Firefox Profiler view
 
 ### Fixed
-- Jeffrey tab no longer spins forever: the URL-retry loop was unbounded (10 ms interval, no limit), repeatedly calling `loadURL` and preventing the page from ever finishing load; bounded to 100 × 50 ms
+- `.cjfr` files now open correctly in both the Firefox Profiler and Jeffrey tabs: missing `femtolz4` and `femtojson` runtime dependencies are now bundled, fixing `NoClassDefFoundError` on decompression and inflation
+- Jeffrey tab no longer spins forever after `.cjfr` inflation: the URL-retry loop was unbounded (10 ms interval, no limit), repeatedly calling `loadURL` and preventing the page from loading; bounded to 100 × 50 ms
+- Firefox Profiler view no longer renders partially: reverted wrapper panel changes that caused sizing issues in JCEF remote/OSR mode (IntelliJ 2026.2+)
 
 ## [0.0.25]
 
