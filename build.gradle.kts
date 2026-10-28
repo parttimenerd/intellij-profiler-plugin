@@ -146,11 +146,11 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.4.20")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-    implementation("me.bechberger:jfrtofp-server:0.0.14") {
+    implementation("me.bechberger:jfrtofp-server:0.0.15") {
         isChanging = true
         isTransitive = false
     }
-    implementation("me.bechberger:jfrtofp:0.0.14") {
+    implementation("me.bechberger:jfrtofp:0.0.15") {
         isChanging = true
         isTransitive = false
     }

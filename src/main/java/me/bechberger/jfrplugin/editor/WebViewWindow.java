@@ -32,14 +32,10 @@ public class WebViewWindow implements Disposable {
     }
 
     public WebViewWindow(Project project, Config config, Path file, String overrideUrl) {
-        // Start the browser immediately on a blank page so JCEF initializes while
-        // the server starts in the background — this keeps the EDT unblocked.
-        // Disable OSR when possible (windowed = GPU-accelerated); fall back to 60fps OSR if forced on.
         JBCefBrowserBuilder builder = new JBCefBrowserBuilder()
-                .setEnableOpenDevToolsMenuItem(true)
-                .setOffScreenRendering(false);
-        if (JBCefApp.isOffScreenRenderingModeEnabled()) {
-            builder.setWindowlessFramerate(60);
+                .setEnableOpenDevToolsMenuItem(true);
+        if (!JBCefApp.isOffScreenRenderingModeEnabled()) {
+            builder.setOffScreenRendering(false);
         }
         browser = builder.build();
         Disposer.register(project, browser);
@@ -63,7 +59,8 @@ public class WebViewWindow implements Disposable {
         new Thread(() -> {
             for (int i = 0; i < 100; i++) {
                 try { Thread.sleep(50); } catch (InterruptedException e) { return; }
-                if (browser.getCefBrowser().getURL().startsWith("http://localhost:")) return;
+                String current = browser.getCefBrowser().getURL();
+                if (current != null && current.startsWith("http://localhost:")) return;
                 browser.getCefBrowser().loadURL(url);
             }
         }).start();

@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [0.0.26]
+
+### Added
+- `profiler.WallClockSample` (async-profiler wall-clock events) now recognized as execution samples in the Firefox Profiler view
+
+### Fixed
+- Jeffrey tab no longer spins forever: the URL-retry loop was unbounded (10 ms interval, no limit), repeatedly calling `loadURL` and preventing the page from ever finishing load; bounded to 100 × 50 ms
+
 ## [0.0.25]
 
 ### Added

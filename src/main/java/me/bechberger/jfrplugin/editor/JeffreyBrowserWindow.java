@@ -27,19 +27,17 @@ public class JeffreyBrowserWindow implements Disposable {
                 .build();
         Disposer.register(project, browser);
 
-        // Retry until the browser actually loads (CEF can drop the first load attempt)
-        new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+        // Retry until the browser actually navigates to the URL (CEF can drop the first load attempt).
+        Thread t = new Thread(() -> {
+            for (int i = 0; i < 100; i++) {
+                try { Thread.sleep(50); } catch (InterruptedException e) { return; }
                 String current = browser.getCefBrowser().getURL();
-                if (current != null && current.startsWith("http://localhost:")) break;
+                if (current != null && current.startsWith("http://localhost:")) return;
                 browser.getCefBrowser().loadURL(url);
             }
-        }).start();
+        });
+        t.setDaemon(true);
+        t.start();
     }
 
     public JComponent getComponent() {
