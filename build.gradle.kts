@@ -159,6 +159,7 @@ dependencies {
         isTransitive = false
     }
     implementation("me.bechberger:femtolz4:0.2.1") { isTransitive = false }
+    implementation("me.bechberger.util:femtojson:0.4.1") { isTransitive = false }
     // Transitive deps of jfrtofp-server (declared explicitly because GitHub Packages requires read:packages)
     implementation("io.javalin:javalin:7.2.3") { isTransitive = false }
     implementation("org.eclipse.jetty:jetty-server:12.1.12") { isTransitive = false }
