@@ -1,27 +1,15 @@
-name: Release on pluginVersion Change
+name: Release
 
 on:
   push:
-    paths:
-      - 'gradle.properties'
-    branches:
-      - main
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version (e.g., 0.0.16)'
-        required: false
-        type: string
-      changelog:
-        description: 'Changelog for this release'
-        required: false
-        type: string
-        ui:
-          textarea: true
+    tags:
+      - 'v*'
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_ACTOR: ${{ github.actor }}
@@ -33,45 +21,24 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: temurin
+          java-version: 21
           cache: gradle
 
-      - name: Extract pluginVersion
-        id: get_version
+      - name: Build and install condensed-data
         run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            version="${{ github.event.inputs.version }}"
-          else
-            version=$(grep '^pluginVersion' gradle.properties | cut -d'=' -f2 | xargs)
-          fi
-          echo "pluginVersion=$version" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          git clone --depth=1 https://github.com/parttimenerd/condensed-data.git /tmp/condensed-data
+          cd /tmp/condensed-data
+          mvn -q install -Dmaven.test.skip=true -P'!jmc-test'
 
-      - name: Check if tag exists
-        id: check_tag
+      - name: Build and install jfrtofp
         run: |
-          git fetch --tags
-          if git rev-parse "v${{ steps.get_version.outputs.pluginVersion }}" >/dev/null 2>&1; then
-            echo "Tag exists"
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Tag does not exist"
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create or update tag and push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            git tag -f v${{ steps.get_version.outputs.pluginVersion }}
-            git push origin -f v${{ steps.get_version.outputs.pluginVersion }}
-          else
-            if [ "${{ steps.check_tag.outputs.exists }}" = "false" ]; then
-              git tag v${{ steps.get_version.outputs.pluginVersion }}
-              git push origin v${{ steps.get_version.outputs.pluginVersion }}
-            fi
-          fi
+          set -euo pipefail
+          git clone --depth=1 https://github.com/parttimenerd/jfrtofp.git /tmp/jfrtofp
+          cd /tmp/jfrtofp
+          chmod +x gradlew
+          ./gradlew publishToMavenLocal -x test -x installCondensedData
 
       - name: Build Plugin (full, with Jeffrey)
         run: ./gradlew buildPlugin -PincludeJeffrey=true
@@ -89,45 +56,40 @@ jobs:
           cd build/distributions
           for f in *.zip; do [[ "$f" != *-full.zip ]] && mv "$f" "${f%.zip}-slim.zip"; done
 
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
       - name: Extract changelog for this version
         id: changelog
         run: |
-          if [ -n "${{ github.event.inputs.changelog }}" ]; then
-            echo "changelog<<EOF" >> $GITHUB_OUTPUT
-            echo "${{ github.event.inputs.changelog }}" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          else
-            version="${{ steps.get_version.outputs.pluginVersion }}"
-            awk -v ver="$version" '
-              BEGIN {found=0}
-              /^## \[/ {
-                if (found) exit
-                if ($2 == "["ver"]") found=1
-              }
-              found && !/^## \[/ {print}
-            ' CHANGELOG.md | sed '/^$/d' > _release_changelog.txt
-            echo 'changelog<<EOF' >> $GITHUB_OUTPUT
-            cat _release_changelog.txt >> $GITHUB_OUTPUT
-            echo 'EOF' >> $GITHUB_OUTPUT
-          fi
+          version="${{ steps.version.outputs.version }}"
+          awk -v ver="$version" '
+            /^## \[/ { if (found) exit; if (index($0, "["ver"]")) found=1; next }
+            found { print }
+          ' CHANGELOG.md > _changelog.txt
+          echo 'notes<<EOF' >> $GITHUB_OUTPUT
+          cat _changelog.txt >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && steps.check_tag.outputs.exists == 'false')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.get_version.outputs.pluginVersion }}
-          name: Release v${{ steps.get_version.outputs.pluginVersion }}
+          tag_name: ${{ github.ref_name }}
+          name: v${{ steps.version.outputs.version }}
           body: |
-            Install the plugin from the JetBrains Marketplace or download a ZIP from this release page and
-            use "Install Plugin from Disk" in your IDE settings.
+            ## Installation
+
+            **From JetBrains Marketplace:** search for *Java JFR Profiler* in Settings → Plugins.
+
+            **Manual install:** download a ZIP below and use *Settings → Plugins → ⚙ → Install Plugin from Disk*.
 
             Two variants:
-            - **-full.zip**: includes the Jeffrey profiler viewer (requires JDK 25+ to use Jeffrey features)
-            - **-slim.zip**: without Jeffrey (~145 MB smaller)
+            - **-full.zip** — includes the Jeffrey profiler viewer (requires JDK 25+)
+            - **-slim.zip** — without Jeffrey (~145 MB smaller)
 
-            ${{ steps.changelog.outputs.changelog }}
+            ## Changelog
+
+            ${{ steps.changelog.outputs.notes }}
           files: |
-            LICENSE
             build/distributions/*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
