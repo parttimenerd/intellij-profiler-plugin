@@ -113,8 +113,8 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2025.3.3")
-            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2026.2.4")
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2025.3")
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2026.2.4")
         }
     }
 }
