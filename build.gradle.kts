@@ -134,7 +134,6 @@ dependencies {
         intellijIdeaCommunity(properties("platformVersion"))
         bundledPlugin("com.intellij.java")
         bundledPlugin("com.intellij.mcpServer")
-        bundledModule("intellij.platform.ui.jcef")
         pluginVerifier()
         zipSigner()
     }
