@@ -5,7 +5,7 @@
 ## [Unreleased]
 
 ### Fixed
-- `ClassNotFoundException: JBCefBrowserBuilder` on IntelliJ 2026.2+: JCEF is now distributed as a separate bundled plugin in 2026.2; added `<depends>com.intellij.modules.jcef</depends>` to `plugin.xml` so the IDE loads it before this plugin
+- `ClassNotFoundException: JBCefBrowserBuilder` on IntelliJ 2026.2+ ([#39](https://github.com/parttimenerd/intellij-profiler-plugin/issues/39)): JCEF is now distributed as a separate bundled plugin in 2026.2; added `<depends>com.intellij.modules.jcef</depends>` to `plugin.xml` so the IDE loads it before this plugin
 
 ## [0.0.26]
 
