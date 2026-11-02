@@ -113,7 +113,8 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2025.2.6")
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2025.3.3")
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, "2026.2.4")
         }
     }
 }
@@ -133,6 +134,7 @@ dependencies {
         intellijIdeaCommunity(properties("platformVersion"))
         bundledPlugin("com.intellij.java")
         bundledPlugin("com.intellij.mcpServer")
+        bundledPlugin("com.intellij.modules.jcef")
         pluginVerifier()
         zipSigner()
     }
