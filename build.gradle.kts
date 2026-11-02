@@ -114,6 +114,7 @@ intellijPlatform {
     pluginVerification {
         ides {
             ide(IntelliJPlatformType.IntellijIdeaCommunity, "2025.2.6")
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, "2026.2.4")
         }
     }
 }
